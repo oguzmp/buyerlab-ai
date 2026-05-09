@@ -1,0 +1,18 @@
+[
+  {
+    "id": "desk-mat-001",
+    "name": "FocusFlow Desk Mat",
+    "category": "Home Office",
+    "price": 39.0,
+    "description": "A washable desk mat with built-in task zones for laptop, notebook, and daily priorities.",
+    "target_audience": "Remote workers who want a calmer, more organized desk setup."
+  },
+  {
+    "id": "hydration-001",
+    "name": "PulseSip Smart Bottle",
+    "category": "Wellness",
+    "price": 59.0,
+    "description": "A stainless steel water bottle that glows gently when it is time to hydrate.",
+    "target_audience": "Busy professionals who forget to drink water during the day."
+  }
+]

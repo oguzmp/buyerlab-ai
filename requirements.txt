@@ -1,0 +1,5 @@
+streamlit
+langgraph
+google-genai
+python-dotenv
+pytest
