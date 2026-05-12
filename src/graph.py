@@ -1,38 +1,62 @@
-"""LangGraph wiring for the BuyerLab AI simulation flow."""
+"""Core simulation orchestration for BuyerLab AI."""
 
 from __future__ import annotations
 
-from typing import Callable
+from typing import Any
 
-from src.agents import simulate_buyer_response
-from src.judge import judge_buyer_response
-from src.state import Product, SimulationState, create_initial_state
-
-
-def build_graph() -> Callable[[SimulationState], SimulationState]:
-    """Build the simulation graph, with a lightweight fallback for local tests."""
-    try:
-        from langgraph.graph import END, START, StateGraph
-    except ImportError:
-        return _run_linear_simulation
-
-    graph = StateGraph(SimulationState)
-    graph.add_node("buyer", simulate_buyer_response)
-    graph.add_node("judge", judge_buyer_response)
-    graph.add_edge(START, "buyer")
-    graph.add_edge("buyer", "judge")
-    graph.add_edge("judge", END)
-    return graph.compile().invoke
+from src.agents import run_debate_round, run_initial_buyer_round
+from src.judge import run_judge_report
+from src.state import ProductInput, SimulationState, create_empty_state
 
 
-def _run_linear_simulation(state: SimulationState) -> SimulationState:
-    """Run the placeholder flow without LangGraph installed."""
-    state = simulate_buyer_response(state)
-    return judge_buyer_response(state)
+def run_simulation(product: ProductInput) -> SimulationState:
+    """Run the complete buyer simulation engine for one product input."""
+    state = create_empty_state(product)
+    state.first_round_responses = run_initial_buyer_round(
+        product=state.product,
+        personas=state.personas,
+    )
+    state.debate_history = run_debate_round(
+        product=state.product,
+        personas=state.personas,
+        first_round_responses=state.first_round_responses,
+    )
+    state.final_report = run_judge_report(state)
+    state.before_score = state.final_report.simulated_conversion_score
+    return state
 
 
-def run_sample_simulation(product: Product) -> SimulationState:
-    """Run one sample buyer simulation for a product."""
-    state = create_initial_state(product)
-    graph = build_graph()
-    return graph(state)
+def run_sample_simulation(product: ProductInput | dict[str, Any]) -> SimulationState:
+    """Backward-compatible wrapper for early local smoke tests."""
+    return run_simulation(_coerce_product_input(product))
+
+
+def _coerce_product_input(product: ProductInput | dict[str, Any]) -> ProductInput:
+    """Convert old sample product dictionaries into ProductInput objects."""
+    if isinstance(product, ProductInput):
+        return product
+
+    return ProductInput(
+        title=str(product.get("title", product.get("name", ""))),
+        category=str(product.get("category", "")),
+        price=float(product.get("price", 0.0)),
+        currency=str(product.get("currency", "USD")),
+        description=str(product.get("description", "")),
+        target_audience=str(product.get("target_audience", "")),
+        value_proposition=str(product.get("value_proposition", "")),
+        warranty_or_return_policy=str(product.get("warranty_or_return_policy", "")),
+        shipping_info=str(product.get("shipping_info", "")),
+        trust_signals=_coerce_string_list(product.get("trust_signals", [])),
+        reviews_or_social_proof=str(product.get("reviews_or_social_proof", "")),
+        call_to_action=str(product.get("call_to_action", "")),
+        image_notes=product.get("image_notes"),
+    )
+
+
+def _coerce_string_list(value: Any) -> list[str]:
+    """Normalize optional list-like sample product fields."""
+    if isinstance(value, list):
+        return [str(item) for item in value]
+    if isinstance(value, str) and value.strip():
+        return [value.strip()]
+    return []
