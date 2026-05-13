@@ -47,7 +47,7 @@ The attention map is also AI-simulated buyer attention and conversion friction a
 - Gemini API via `google-genai`
 - Python dataclasses for typed domain models
 - JSON-based structured outputs
-- LangGraph-ready dependency in the project stack; current orchestration is implemented with lightweight Python functions
+- Lightweight Python orchestration for the multi-agent simulation flow
 
 ## How It Works
 
@@ -132,6 +132,13 @@ Recommended demo products:
 - Running shoes
 
 These products work well because buyers naturally care about price, trust, proof, shipping, return policy, emotional appeal, and product details.
+
+## Hackathon Submission Notes
+
+- Main AI provider: Gemini API
+- App type: Streamlit web app
+- Core idea: AI buyer simulation for pre-launch e-commerce testing
+- Main differentiator: multi-agent buyer debate + simulated conversion score + friction map + before-after optimization
 
 ## Limitations
 

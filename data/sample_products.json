@@ -1,18 +1,60 @@
 [
   {
-    "id": "desk-mat-001",
+    "id": "audio-001",
+    "title": "AeroTune Wireless Headphones",
+    "name": "AeroTune Wireless Headphones",
+    "category": "Consumer Electronics",
+    "price": 89.0,
+    "currency": "USD",
+    "description": "Wireless over-ear headphones with active noise reduction, foldable design, and up to 32 hours of battery life.",
+    "target_audience": "Commuters, students, and remote workers who need focused listening on a budget.",
+    "value_proposition": "Comfortable everyday noise reduction without premium headphone pricing.",
+    "warranty_or_return_policy": "30-day returns and a 1-year limited hardware warranty.",
+    "shipping_info": "Standard shipping in 3-5 business days; shipping cost shown at checkout.",
+    "trust_signals": [
+      "Secure checkout",
+      "Clear warranty policy",
+      "Customer support email listed"
+    ],
+    "reviews_or_social_proof": "Early tester quotes are being collected; no public reviews yet.",
+    "call_to_action": "Check availability",
+    "image_notes": "Hero image should show the headphones folded and worn by a commuter."
+  },
+  {
+    "id": "running-001",
+    "title": "StrideLite Daily Running Shoes",
+    "name": "StrideLite Daily Running Shoes",
+    "category": "Footwear",
+    "price": 74.0,
+    "currency": "USD",
+    "description": "Lightweight road running shoes designed for short daily runs, walking, and gym commutes.",
+    "target_audience": "Beginner runners and active commuters who want one comfortable daily shoe.",
+    "value_proposition": "A simple everyday running shoe with breathable comfort and practical pricing.",
+    "warranty_or_return_policy": "",
+    "shipping_info": "",
+    "trust_signals": [],
+    "reviews_or_social_proof": "Pre-launch product with no customer reviews yet.",
+    "call_to_action": "Join the launch list",
+    "image_notes": "Needs clear sole, side, and on-foot images to show cushioning and fit."
+  },
+  {
+    "id": "desk-001",
+    "title": "FocusFlow Desk Mat",
     "name": "FocusFlow Desk Mat",
     "category": "Home Office",
     "price": 39.0,
-    "description": "A washable desk mat with built-in task zones for laptop, notebook, and daily priorities.",
-    "target_audience": "Remote workers who want a calmer, more organized desk setup."
-  },
-  {
-    "id": "hydration-001",
-    "name": "PulseSip Smart Bottle",
-    "category": "Wellness",
-    "price": 59.0,
-    "description": "A stainless steel water bottle that glows gently when it is time to hydrate.",
-    "target_audience": "Busy professionals who forget to drink water during the day."
+    "currency": "USD",
+    "description": "A washable desk mat with task zones for a laptop, notebook, mouse, and daily priorities.",
+    "target_audience": "Remote workers who want a calmer and more organized desk setup.",
+    "value_proposition": "Turns a cluttered desk into a simple visual workspace without adding another app.",
+    "warranty_or_return_policy": "Unused items can be returned within 30 days.",
+    "shipping_info": "Ships flat in recyclable packaging; estimated delivery is 4-7 business days.",
+    "trust_signals": [
+      "Secure checkout",
+      "Return policy visible before purchase"
+    ],
+    "reviews_or_social_proof": "No public reviews yet; intended for pre-launch page testing.",
+    "call_to_action": "Organize my desk",
+    "image_notes": "Show a realistic desk setup with laptop, notebook, and mouse for scale."
   }
 ]

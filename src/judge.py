@@ -8,6 +8,7 @@ from statistics import mean
 from typing import Any
 
 from src.gemini_client import generate_json
+from src.price_intelligence import analyze_local_price_perception
 from src.prompts import JUDGE_PROMPT
 from src.state import AgentResponse, SimulationReport, SimulationState
 
@@ -172,6 +173,12 @@ def build_enhanced_judge_context(state: SimulationState) -> dict[str, Any]:
 
     clustered_objections = cluster_objections(state.first_round_responses)
     risk_scores = calculate_risk_scores(state.first_round_responses)
+    price_perception_report = analyze_local_price_perception(state.product)
+    risk_scores["price_resistance_score"] = max(
+        risk_scores["price_resistance_score"],
+        price_perception_report.perceived_value_risk,
+    )
+    price_perception = asdict(price_perception_report)
 
     return {
         "important_note": (
@@ -192,6 +199,7 @@ def build_enhanced_judge_context(state: SimulationState) -> dict[str, Any]:
         "buyer_loss_analysis": buyer_losses,
         "clustered_objections": clustered_objections,
         "risk_scores": risk_scores,
+        "price_perception": price_perception,
         "prioritized_action_items": prioritize_action_items(
             state.first_round_responses,
             clustered_objections,

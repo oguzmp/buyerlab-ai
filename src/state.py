@@ -9,6 +9,7 @@ from typing import Literal
 Decision = Literal["buy", "reject", "hesitate"]
 DebateStance = Literal["support", "oppose", "neutral"]
 SectionSentiment = Literal["positive", "neutral", "negative"]
+PriceBand = Literal["budget", "mid_range", "upper_mid", "premium", "irrational"]
 
 
 PAGE_SECTION_NAMES = [
@@ -127,6 +128,30 @@ class AttentionMapReport:
     weakest_section: str = ""
     highest_friction_section: str = ""
     summary: str = ""
+
+
+@dataclass(slots=True)
+class PricePerceptionReport:
+    """Simulated local pricing assessment for a product, not live market research."""
+
+    currency: str = ""
+    category: str = "general_product"
+    price: float = 0.0
+    local_market: str = "generic"
+    price_band: PriceBand = "mid_range"
+    perceived_value_risk: int = 0
+    expected_customer_questions: list[str] = field(default_factory=list)
+    required_value_proofs: list[str] = field(default_factory=list)
+    pricing_comment: str = ""
+    suggested_price_positioning: str = ""
+
+    def __post_init__(self) -> None:
+        _validate_literal(
+            "price_band",
+            self.price_band,
+            {"budget", "mid_range", "upper_mid", "premium", "irrational"},
+        )
+        _validate_score("perceived_value_risk", self.perceived_value_risk)
 
 
 @dataclass(slots=True)

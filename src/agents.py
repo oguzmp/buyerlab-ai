@@ -6,6 +6,7 @@ from dataclasses import asdict
 from typing import Any
 
 from src.gemini_client import generate_json
+from src.price_intelligence import build_price_context_for_prompt
 from src.prompts import (
     BARGAIN_HUNTER_PROMPT,
     IMPULSIVE_BUYER_PROMPT,
@@ -95,6 +96,11 @@ def _build_persona_prompt(product: ProductInput, persona: BuyerPersona) -> str:
     base_prompt = PERSONA_PROMPTS.get(persona.id, SKEPTIC_PROMPT)
     product_context = _format_product_context(product)
     persona_context = _format_persona_context(persona)
+    price_context = (
+        f"\n\n{build_price_context_for_prompt(product)}"
+        if persona.id == "bargain_hunter"
+        else ""
+    )
 
     return f"""
 {base_prompt}
@@ -104,6 +110,7 @@ Persona context:
 
 Product page context:
 {product_context}
+{price_context}
 
 Return only valid JSON for this exact engine schema:
 {{

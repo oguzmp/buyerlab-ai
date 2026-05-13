@@ -2,6 +2,8 @@
 
 Use this 60-second script for hackathon judging.
 
+Before recording, set `BUYERLAB_MOCK_MODE=true` for a deterministic demo if a Gemini API key is not available.
+
 ## 0-10 sec: Problem
 
 “E-commerce sellers often discover product-page problems after they already spent money on ads or launched to customers. BuyerLab AI helps identify those weaknesses before launch.”
