@@ -258,9 +258,13 @@ class LaunchReadinessReport:
     local_price_perception_summary: str = ""
     competitor_gap_summary: str = ""
     buyer_persona_verdicts: list[dict[str, Any]] = field(default_factory=list)
+    buyer_loss_summary: str = ""
     top_conversion_blockers: list[str] = field(default_factory=list)
     required_fix_before_launch: list[str] = field(default_factory=list)
     next_best_actions: list[str] = field(default_factory=list)
+    price_justification_verdict: str = ""
+    competitor_gap_verdict: str = ""
+    launch_decision_summary: str = ""
     summary: str = ""
 
     def __post_init__(self) -> None:
@@ -286,6 +290,7 @@ class SimulationReport:
     local_price_perception_summary: str = ""
     competitor_gap_summary: str = ""
     buyer_persona_verdicts: list[dict[str, Any]] = field(default_factory=list)
+    buyer_loss_summary: str = ""
     top_conversion_blockers: list[str] = field(default_factory=list)
     required_fix_before_launch: list[str] = field(default_factory=list)
     next_best_actions: list[str] = field(default_factory=list)
@@ -298,6 +303,9 @@ class SimulationReport:
     return_risk_score: int = 0
     top_action_items: list[str] = field(default_factory=list)
     price_positioning_verdict: str = ""
+    price_justification_verdict: str = ""
+    competitor_gap_verdict: str = ""
+    launch_decision_summary: str = ""
     required_price_proofs: list[str] = field(default_factory=list)
     summary: str = ""
 

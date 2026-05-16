@@ -679,7 +679,7 @@ def _render_dashboard(results: dict[str, Any]) -> None:
         _render_buyer_loss_analysis(buyer_loss_analysis)
         _render_debate_terminal(before_state)
     with tabs[2]:
-        _render_market_context(before_state.product)
+        _render_market_context(before_state)
     with tabs[3]:
         _render_category_audit(before_state)
     with tabs[4]:
@@ -709,6 +709,10 @@ def _render_launch_readiness(
     with col1:
         _audit_panel(_t("main_blocker"), final_report.main_blocker or final_report.summary)
         _audit_panel(_t("executive_verdict"), final_report.executive_verdict or final_report.summary)
+        if final_report.buyer_loss_summary:
+            _audit_panel("Buyer Loss Summary", final_report.buyer_loss_summary)
+        if final_report.launch_decision_summary:
+            _audit_panel("Launch Decision Summary", final_report.launch_decision_summary)
     with col2:
         st.markdown(f"#### {_t('next_actions')}")
         _render_list(final_report.next_best_actions or final_report.top_action_items)
@@ -806,8 +810,10 @@ def _render_debate_terminal(state: SimulationState) -> None:
     st.markdown(f"<div class='terminal'>{''.join(lines)}</div>", unsafe_allow_html=True)
 
 
-def _render_market_context(product: ProductInput) -> None:
+def _render_market_context(state: SimulationState) -> None:
     """Render local price perception and competitor context."""
+    product = state.product
+    final_report = state.final_report
     price_report = analyze_local_price_perception(product)
     competitor_gap = analyze_competitor_gap(product)
 
@@ -820,7 +826,14 @@ def _render_market_context(product: ProductInput) -> None:
 
     col1, col2 = st.columns([1, 1])
     with col1:
-        _audit_panel("Heuristic local TRY price perception", price_report.pricing_comment)
+        _audit_panel(
+            "Price Justification Verdict",
+            (
+                final_report.price_justification_verdict
+                if final_report and final_report.price_justification_verdict
+                else price_report.pricing_comment
+            ),
+        )
         _audit_panel(_t("price_positioning"), price_report.suggested_price_positioning)
         st.markdown(f"#### {_t('required_value_proofs')}")
         _render_pills(price_report.required_value_proofs or [_t("no_objection")])
@@ -829,6 +842,14 @@ def _render_market_context(product: ProductInput) -> None:
 
     with col2:
         if _has_competitor_context(product.competitor_context):
+            _audit_panel(
+                "Competitor Gap Verdict",
+                (
+                    final_report.competitor_gap_verdict
+                    if final_report and final_report.competitor_gap_verdict
+                    else competitor_gap.value_gap_summary
+                ),
+            )
             _audit_panel(_t("competitor_gap"), competitor_gap.value_gap_summary)
             _audit_panel("Competitor positioning", competitor_gap.competitor_positioning_comment)
             st.markdown(f"#### {_t('proofs_to_win')}")
@@ -911,6 +932,20 @@ def _render_optimization(suggestion: Any) -> None:
         _audit_panel(_t("shipping_improvement"), suggestion.shipping_info)
         st.markdown(f"#### {_t('improved_trust')}")
         _render_pills(suggestion.trust_signals)
+        trust_checklist = getattr(suggestion, "trust_proof_checklist", [])
+        if trust_checklist:
+            st.markdown("#### Trust Proof Checklist")
+            _render_list(trust_checklist)
+
+    competitor_suggestion = getattr(suggestion, "competitor_comparison_suggestion", "")
+    missing_checklist = getattr(suggestion, "missing_information_checklist", [])
+    if competitor_suggestion or missing_checklist:
+        col_comp, col_missing = st.columns([1, 1])
+        with col_comp:
+            _audit_panel("Competitor Comparison Suggestion", competitor_suggestion)
+        with col_missing:
+            st.markdown("#### Missing Information Checklist")
+            _render_list(missing_checklist)
 
     col3, col4 = st.columns([1, 1])
     with col3:

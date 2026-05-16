@@ -277,9 +277,13 @@ Return only valid JSON for this exact report schema:
   ],
   "local_price_perception_summary": "",
   "buyer_persona_verdicts": [],
+  "buyer_loss_summary": "",
   "top_conversion_blockers": [],
   "required_fix_before_launch": [],
   "next_best_actions": [],
+  "price_justification_verdict": "",
+  "competitor_gap_verdict": "",
+  "launch_decision_summary": "",
   "summary": ""
 }}
 
@@ -342,6 +346,7 @@ def _simulation_report_from_json(
             raw_report.get("buyer_persona_verdicts"),
             default=launch_readiness["buyer_persona_verdicts"],
         ),
+        buyer_loss_summary=launch_readiness["buyer_loss_summary"],
         top_conversion_blockers=_short_list(
             raw_report.get("top_conversion_blockers"),
             default=launch_readiness["top_conversion_blockers"],
@@ -392,6 +397,9 @@ def _simulation_report_from_json(
             raw_report.get("price_positioning_verdict"),
             competitor_analysis["price_positioning_verdict"],
         ),
+        price_justification_verdict=launch_readiness["price_justification_verdict"],
+        competitor_gap_verdict=launch_readiness["competitor_gap_verdict"],
+        launch_decision_summary=launch_readiness["launch_decision_summary"],
         required_price_proofs=_short_list(
             raw_report.get("required_price_proofs"),
             default=competitor_analysis["required_price_proofs"],
@@ -429,6 +437,7 @@ def _fallback_report(state: SimulationState, error: Exception | None = None) -> 
         local_price_perception_summary=launch_readiness["local_price_perception_summary"],
         competitor_gap_summary=launch_readiness["competitor_gap_summary"],
         buyer_persona_verdicts=launch_readiness["buyer_persona_verdicts"],
+        buyer_loss_summary=launch_readiness["buyer_loss_summary"],
         top_conversion_blockers=launch_readiness["top_conversion_blockers"],
         required_fix_before_launch=launch_readiness["required_fix_before_launch"],
         next_best_actions=launch_readiness["next_best_actions"],
@@ -441,6 +450,9 @@ def _fallback_report(state: SimulationState, error: Exception | None = None) -> 
         return_risk_score=risk_scores["return_risk_score"],
         top_action_items=enhanced_context["prioritized_action_items"],
         price_positioning_verdict=competitor_analysis["price_positioning_verdict"],
+        price_justification_verdict=launch_readiness["price_justification_verdict"],
+        competitor_gap_verdict=launch_readiness["competitor_gap_verdict"],
+        launch_decision_summary=launch_readiness["launch_decision_summary"],
         required_price_proofs=competitor_analysis["required_price_proofs"],
         summary=launch_readiness["summary"],
     )

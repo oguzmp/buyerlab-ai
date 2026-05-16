@@ -107,16 +107,32 @@ def build_launch_readiness_report(
     launch_status = determine_launch_status(
         launch_readiness_score=launch_score,
         trust_risk_score=risk_scores["trust_risk_score"],
+        return_risk_score=risk_scores["return_risk_score"],
+        simulated_conversion_score=simulated_conversion_score,
         category_expectation_check=category_check,
         price_report=price_report,
         competitor_gap=competitor_gap,
     )
     main_blocker = blockers[0] if blockers else "No major blocker identified."
+    buyer_loss_summary = _buyer_loss_summary(persona_verdicts)
+    price_verdict = _price_justification_verdict(
+        product,
+        price_report,
+        category_check,
+        competitor_gap,
+    )
+    competitor_verdict = _competitor_gap_verdict(product, competitor_gap)
+    launch_decision = _launch_decision_summary(launch_status, required_fixes)
 
     return LaunchReadinessReport(
         launch_readiness_score=launch_score,
         launch_status=launch_status,
-        executive_verdict=_executive_verdict(launch_status, main_blocker),
+        executive_verdict=_executive_verdict(
+            launch_status,
+            main_blocker,
+            persona_verdicts,
+            required_fixes,
+        ),
         main_blocker=main_blocker,
         simulated_conversion_score=simulated_conversion_score,
         trust_risk_score=risk_scores["trust_risk_score"],
@@ -127,10 +143,19 @@ def build_launch_readiness_report(
         local_price_perception_summary=price_report.pricing_comment,
         competitor_gap_summary=competitor_gap.value_gap_summary,
         buyer_persona_verdicts=persona_verdicts,
+        buyer_loss_summary=buyer_loss_summary,
         top_conversion_blockers=blockers,
         required_fix_before_launch=required_fixes,
         next_best_actions=_next_best_actions(required_fixes),
-        summary=_summary(launch_status, launch_score, simulated_conversion_score),
+        price_justification_verdict=price_verdict,
+        competitor_gap_verdict=competitor_verdict,
+        launch_decision_summary=launch_decision,
+        summary=_summary(
+            launch_status,
+            launch_score,
+            simulated_conversion_score,
+            launch_decision,
+        ),
     )
 
 
@@ -188,6 +213,8 @@ def calculate_launch_readiness_score(
 def determine_launch_status(
     launch_readiness_score: int,
     trust_risk_score: int = 0,
+    return_risk_score: int = 0,
+    simulated_conversion_score: int = 100,
     category_expectation_check: list[dict[str, Any]] | None = None,
     price_report: PricePerceptionReport | None = None,
     competitor_gap: CompetitorGapReport | None = None,
@@ -206,17 +233,21 @@ def determine_launch_status(
         or critical_missing > 0
         or (price_report is not None and _premium_price_needs_proof(price_report))
         or (competitor_gap is not None and _competitor_gap_is_unjustified(competitor_gap))
+        or return_risk_score >= 60
+        or simulated_conversion_score < 65
     ):
         status = "needs_fixes"
 
     if (
         trust_risk_score >= 85
-        or critical_missing >= 4
+        or critical_missing >= 3
+        or return_risk_score >= 80
+        or simulated_conversion_score < 45
         or (price_report is not None and price_report.price_band == "irrational")
         or (
             competitor_gap is not None
             and _competitor_gap_is_unjustified(competitor_gap)
-            and launch_readiness_score < 65
+            and launch_readiness_score < 70
         )
     ):
         status = "not_ready"
@@ -364,7 +395,7 @@ def build_required_fix_list(
 
     if any("Trust proof" in blocker for blocker in blockers):
         fixes.append(
-            "Add real trust signals: warranty terms, support contact, proof assets, and visible return safety."
+            "Add real trust signals: exact warranty duration, return conditions, support contact, proof assets, and visible purchase safety."
         )
 
     if missing_fields:
@@ -398,7 +429,7 @@ def build_required_fix_list(
         fixes.append("Sharpen the CTA and add a concrete use-case promise without exaggerating claims.")
 
     for proof in competitor_gap.required_proofs_to_win[:3]:
-        if "Clear benefit explanation" not in proof:
+        if "Clear benefit explanation" not in proof and "Shipping and return terms" not in proof:
             _append_unique(fixes, _proof_to_fix(proof))
 
     return fixes[:7] or ["No required fix identified before launch."]
@@ -527,17 +558,20 @@ def _category_specific_fix(product: ProductInput, missing_fields: list[str]) -> 
     """Create a concrete category-critical information fix."""
     category = normalize_category(product.normalized_category or product.category)
     if category == "electronics_accessory":
-        return "Add exact battery life, warranty period, compatibility, technical specs, return policy, and real usage proof before launch."
+        fix = "Add exact battery life, warranty period, Bluetooth/version compatibility, technical specs, return policy, and real usage proof before launch."
+        if _product_mentions_audio(product):
+            fix += " Include microphone or sound quality proof for this model."
+        return fix
     if category == "fashion_shoes":
         return "Add a size guide, fit information, material details, return/exchange terms, comfort use case, and real product photos."
     if category == "small_home_appliance":
-        return "Add technical specs, usage instructions, warranty, service terms, return policy, and delivery information."
+        return "Add warranty, technical specifications, capacity, power usage, cleaning/maintenance details, safety information, and delivery terms."
     if category == "digital_service":
         return "Add scope, delivery time, revision policy, portfolio proof, support terms, and what is included or excluded."
     if category == "online_course":
-        return "Add curriculum, instructor credibility, learning outcomes, time commitment, refund policy, and real student proof."
+        return "Add instructor credibility, curriculum clarity, learning outcomes, target student level, sample lesson/proof, and certificate or refund policy only if real."
     if category == "handmade_bag":
-        return "Add material, dimensions, craftsmanship proof, care instructions, return policy, and real product photos."
+        return "Add material proof, dimensions, craftsmanship details, real product photos, return policy, and authenticity/trust proof."
     return f"Add category-critical details before launch: {', '.join(missing_fields[:5])}."
 
 
@@ -559,22 +593,200 @@ def _next_best_actions(required_fixes: list[str]) -> list[str]:
     return actions[:5] or required_fixes[:5]
 
 
-def _summary(status: str, launch_score: int, conversion_score: int) -> str:
+def _summary(
+    status: str,
+    launch_score: int,
+    conversion_score: int,
+    launch_decision: str,
+) -> str:
     """Write a short report summary with careful non-predictive wording."""
     return (
-        f"Launch readiness is {status} with a {launch_score}/100 AI-assisted "
+        f"Launch readiness is {_status_label(status)} with a {launch_score}/100 AI-assisted "
         f"diagnostic score and {conversion_score}/100 simulated conversion score; "
-        "not a real market prediction."
+        f"not a real market prediction. {launch_decision}"
     )
 
 
-def _executive_verdict(status: str, main_blocker: str) -> str:
+def _executive_verdict(
+    status: str,
+    main_blocker: str,
+    persona_verdicts: list[dict[str, Any]],
+    required_fixes: list[str],
+) -> str:
     """Write a 10-second executive verdict."""
+    business_impact = _business_impact_summary(persona_verdicts)
+    recommendation = _launch_recommendation(status, required_fixes)
     if status == "ready":
-        return "Launch readiness: Ready. The page has no critical simulated buyer blocker."
+        return (
+            "This product page is ready to launch in the simulated buyer "
+            f"assessment. Business impact: {business_impact} Recommendation: {recommendation}"
+        )
     if status == "not_ready":
-        return f"Launch readiness: Not Ready. Do not launch before fixing: {main_blocker}"
-    return f"Launch readiness: Needs Fixes. Fix before launch: {main_blocker}"
+        return (
+            "This product page is not ready to launch. "
+            f"Main blocker: {main_blocker} Business impact: {business_impact} "
+            f"Recommendation: {recommendation}"
+        )
+    return (
+        "This product page needs fixes before launch. "
+        f"Main blocker: {main_blocker} Business impact: {business_impact} "
+        f"Recommendation: {recommendation}"
+    )
+
+
+def _buyer_loss_summary(persona_verdicts: list[dict[str, Any]]) -> str:
+    """Summarize which simulated buyer personas are lost and why."""
+    lost = [
+        verdict
+        for verdict in persona_verdicts
+        if verdict.get("decision") in {"reject", "hesitate"}
+    ]
+    if not lost:
+        return "No buyer persona was lost in this simulated buyer assessment."
+
+    names = ", ".join(str(verdict.get("persona_name", "Unknown Persona")) for verdict in lost[:3])
+    reasons = [
+        str(verdict.get("top_objection") or verdict.get("main_reason") or "").strip()
+        for verdict in lost
+    ]
+    reasons = [reason for reason in reasons if reason and reason != "No major objection."]
+    reason_text = "; ".join(reasons[:3]) or "the page does not create enough purchase confidence"
+    return (
+        f"BuyerLab lost the {names} persona(s). This creates business risk because "
+        f"buyers are likely to hesitate over: {reason_text}."
+    )
+
+
+def _price_justification_verdict(
+    product: ProductInput,
+    price_report: PricePerceptionReport,
+    category_check: list[dict[str, Any]],
+    competitor_gap: CompetitorGapReport,
+) -> str:
+    """Explain whether the page proves the local price without claiming market data."""
+    category_name = get_category_profile(
+        price_report.normalized_category
+    ).display_name.lower()
+    price_label = f"{price_report.price:g} {price_report.currency}"
+    proof_gaps = [
+        row["field_name"]
+        for row in category_check
+        if row["status"] in {"missing", "weak"} and row["impact"] in {"high", "medium"}
+    ]
+    competitor_gap_text = ""
+    if competitor_gap.price_gap is not None and competitor_gap.price_gap > 0:
+        competitor_gap_text = (
+            f" It is {competitor_gap.price_gap:g} {price_report.currency} above the competitor, "
+            "so the difference must be explained."
+        )
+
+    if price_report.currency == "TRY":
+        prefix = (
+            f"{price_label} places this product in a {price_report.price_band} "
+            f"perception band for {category_name}."
+        )
+    else:
+        prefix = (
+            f"{price_label} is assessed with a generic {price_report.price_band} "
+            "price perception fallback."
+        )
+
+    if price_report.perceived_value_risk >= 60 or proof_gaps:
+        gaps = ", ".join(proof_gaps[:4]) or "value proof"
+        return (
+            f"{prefix} The page does not yet justify this price because {gaps} "
+            f"are missing or weak.{competitor_gap_text}"
+        )
+    return f"{prefix} The page has enough proof for a first simulated price pass.{competitor_gap_text}"
+
+
+def _competitor_gap_verdict(
+    product: ProductInput,
+    competitor_gap: CompetitorGapReport,
+) -> str:
+    """Explain seller-provided competitor gap without live competitor research."""
+    competitor = product.competitor_context
+    if competitor is None or not (
+        competitor.competitor_name
+        or competitor.competitor_price
+        or competitor.our_differentiator
+        or competitor.competitor_strengths
+    ):
+        return (
+            "Competitor context was not provided, so BuyerLab cannot evaluate "
+            "price positioning against alternatives."
+        )
+
+    name = competitor.competitor_name or "the provided competitor"
+    if competitor_gap.price_gap is None:
+        price_text = "No same-currency competitor price gap could be calculated."
+    elif competitor_gap.price_gap > 0:
+        price_text = f"The product is {competitor_gap.price_gap:g} above {name}."
+    elif competitor_gap.price_gap < 0:
+        price_text = f"The product is {abs(competitor_gap.price_gap):g} below {name}."
+    else:
+        price_text = f"The product is priced at parity with {name}."
+
+    proof_text = (
+        "The differentiator is not proven yet."
+        if competitor_gap.our_unproven_claims
+        else "The differentiator has some provided support, but should stay visible."
+    )
+    return (
+        f"{price_text} {proof_text} Position against the competitor with a short "
+        "comparison table and seller-provided proof."
+    )
+
+
+def _launch_decision_summary(status: str, required_fixes: list[str]) -> str:
+    """Create the final short launch decision."""
+    first_fix = required_fixes[0] if required_fixes else "keep the current proof visible"
+    if status == "not_ready":
+        return (
+            "Decision: Do not launch yet. Fix trust proof, price justification, "
+            f"and category-critical details first. Start with: {first_fix}"
+        )
+    if status == "needs_fixes":
+        return (
+            "Decision: Launch is possible only after required fixes before launch "
+            f"are completed. Start with: {first_fix}"
+        )
+    return "Decision: Launch is possible. Keep proof, pricing, and risk reducers visible."
+
+
+def _status_label(status: str) -> str:
+    """Convert internal status labels into user-facing labels."""
+    return {
+        "ready": "Ready",
+        "needs_fixes": "Needs Fixes",
+        "not_ready": "Not Ready",
+    }.get(status, "Needs Fixes")
+
+
+def _business_impact_summary(persona_verdicts: list[dict[str, Any]]) -> str:
+    """Summarize business impact from lost personas."""
+    high_impact_losses = [
+        verdict
+        for verdict in persona_verdicts
+        if verdict.get("business_impact") == "high"
+        and verdict.get("decision") != "buy"
+    ]
+    if high_impact_losses:
+        names = ", ".join(str(verdict.get("persona_name")) for verdict in high_impact_losses[:2])
+        return f"high, because {names} are rejecting or strongly hesitating."
+    if any(verdict.get("decision") != "buy" for verdict in persona_verdicts):
+        return "medium, because some buyer personas still hesitate."
+    return "low, because no major simulated buyer segment is blocked."
+
+
+def _launch_recommendation(status: str, required_fixes: list[str]) -> str:
+    """Return a concise launch recommendation."""
+    if status == "ready":
+        return "Launch can proceed, but keep monitoring real buyer behavior."
+    first_fix = required_fixes[0] if required_fixes else "complete the required fixes before launch"
+    if status == "not_ready":
+        return f"Do not launch yet; {first_fix}"
+    return f"Launch only after this fix is completed: {first_fix}"
 
 
 def _estimate_conversion_score(responses: list[AgentResponse]) -> int:
@@ -657,6 +869,21 @@ def _competitor_name(product: ProductInput) -> str:
     if product.competitor_context and product.competitor_context.competitor_name:
         return product.competitor_context.competitor_name
     return "the competitor"
+
+
+def _product_mentions_audio(product: ProductInput) -> bool:
+    """Detect when electronics copy should ask for microphone or sound proof."""
+    text = " ".join(
+        [
+            product.product_type,
+            product.title,
+            product.description,
+            product.value_proposition,
+            product.intended_use_case,
+            " ".join(product.known_limitations),
+        ]
+    ).lower()
+    return any(word in text for word in ["earbud", "headphone", "audio", "mic", "microphone", "sound"])
 
 
 def _coerce_price_report(value: Any) -> PricePerceptionReport | None:

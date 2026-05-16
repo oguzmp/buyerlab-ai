@@ -7,6 +7,8 @@ from dataclasses import asdict, dataclass, field, replace
 from typing import Any
 
 from src.gemini_client import generate_json
+from src.launch_readiness import build_category_expectation_check
+from src.price_intelligence import analyze_competitor_gap, analyze_local_price_perception
 from src.state import (
     AttentionMapReport,
     PAGE_SECTION_NAMES,
@@ -26,7 +28,10 @@ class OptimizedProductSuggestion:
     warranty_or_return_policy: str = ""
     shipping_info: str = ""
     trust_signals: list[str] = field(default_factory=list)
+    trust_proof_checklist: list[str] = field(default_factory=list)
     faq_items: list[str] = field(default_factory=list)
+    competitor_comparison_suggestion: str = ""
+    missing_information_checklist: list[str] = field(default_factory=list)
     call_to_action: str = ""
     change_summary: list[str] = field(default_factory=list)
 
@@ -65,7 +70,10 @@ Return only valid JSON with this exact shape:
   "warranty_or_return_policy": "",
   "shipping_info": "",
   "trust_signals": [],
+  "trust_proof_checklist": [],
   "faq_items": [],
+  "competitor_comparison_suggestion": "",
+  "missing_information_checklist": [],
   "call_to_action": "",
   "change_summary": []
 }}
@@ -79,6 +87,10 @@ Rules:
 - Do not exaggerate product claims.
 - Do not invent fake reviews, fake certifications, fake awards, or fake guarantees.
 - If trust signals are missing, suggest adding real trust signals the seller can verify.
+- If proof is missing, say "add real proof" instead of fabricating facts.
+- Include a missing_information_checklist with category-critical fields the seller
+  must add before launch.
+- Include competitor_comparison_suggestion only from seller-provided competitor data.
 - Mention "simulated conversion score" only as a testing signal, not a prediction.
 """.strip()
 
@@ -165,8 +177,23 @@ def _suggestion_from_json(
         or _fallback_shipping(product),
         trust_signals=_short_list(raw_suggestion.get("trust_signals"), limit=5)
         or _fallback_trust_signals(product),
+        trust_proof_checklist=_short_list(
+            raw_suggestion.get("trust_proof_checklist"),
+            limit=6,
+        )
+        or _fallback_trust_proof_checklist(product, final_report),
         faq_items=_short_list(raw_suggestion.get("faq_items"), limit=5)
         or _fallback_faq_items(product, final_report),
+        competitor_comparison_suggestion=_short_text(
+            raw_suggestion.get("competitor_comparison_suggestion"),
+            limit=240,
+        )
+        or _fallback_competitor_comparison(product),
+        missing_information_checklist=_short_list(
+            raw_suggestion.get("missing_information_checklist"),
+            limit=8,
+        )
+        or _fallback_missing_information_checklist(product),
         call_to_action=_short_text(raw_suggestion.get("call_to_action"), limit=80)
         or _fallback_call_to_action(product),
         change_summary=_short_list(raw_suggestion.get("change_summary"), limit=5)
@@ -188,7 +215,10 @@ def _fallback_suggestion(
         warranty_or_return_policy=_fallback_warranty(product),
         shipping_info=_fallback_shipping(product),
         trust_signals=_fallback_trust_signals(product),
+        trust_proof_checklist=_fallback_trust_proof_checklist(product, final_report),
         faq_items=_fallback_faq_items(product, final_report),
+        competitor_comparison_suggestion=_fallback_competitor_comparison(product),
+        missing_information_checklist=_fallback_missing_information_checklist(product),
         call_to_action=_fallback_call_to_action(product),
         change_summary=_fallback_change_summary(final_report, attention_map),
     )
@@ -196,29 +226,39 @@ def _fallback_suggestion(
 
 def _fallback_title(product: ProductInput) -> str:
     """Return a clearer title without inventing unsupported claims."""
+    identity = " ".join(
+        part
+        for part in [product.brand, product.model, product.product_type]
+        if part
+    )
+    if identity:
+        return _short_text(identity)
     if product.title and product.category:
-        return _short_text(f"{product.title} for {product.target_audience or product.category}")
+        return _short_text(f"{product.title} for {product.intended_use_case or product.category}")
     return product.title or "Product for your next launch"
 
 
 def _fallback_description(product: ProductInput) -> str:
     """Return concise description copy grounded in the original product input."""
     base = product.description or "Describe what the product does and who it helps."
-    audience = product.target_audience or "the intended buyer"
+    audience = product.intended_use_case or product.target_audience or "the intended buyer"
+    missing = _fallback_missing_information_checklist(product)
+    missing_text = f" Add real proof for: {', '.join(missing[:3])}." if missing else ""
     return _short_text(
-        f"{base} Built for {audience}, with clearer benefits, proof, and next steps.",
+        f"{base} Built for {audience}. State the key benefit, exact proof, price justification, and next step clearly.{missing_text}",
         limit=320,
     )
 
 
 def _fallback_value_proposition(product: ProductInput) -> str:
     """Return a sharper value proposition using existing product facts."""
+    price_report = analyze_local_price_perception(product)
     if product.value_proposition:
         return _short_text(
-            f"{product.value_proposition} Clear benefits, reduced risk, and easy purchase details.",
+            f"{product.value_proposition} Justify the {price_report.price_band} price with concrete proof, risk reduction, and category-specific details.",
             limit=220,
         )
-    return "Explain the main benefit, why it matters, and why the price is justified."
+    return "Explain the main benefit, why it matters, and what real proof justifies the price."
 
 
 def _fallback_warranty(product: ProductInput) -> str:
@@ -249,6 +289,23 @@ def _fallback_trust_signals(product: ProductInput) -> list[str]:
     return signals[:5]
 
 
+def _fallback_trust_proof_checklist(
+    product: ProductInput,
+    final_report: SimulationReport,
+) -> list[str]:
+    """Create a concrete trust proof checklist without inventing fake claims."""
+    checklist = [
+        "Add exact warranty duration and return conditions.",
+        "Add real support channel and service policy.",
+        "Add real proof assets instead of generic quality claims.",
+    ]
+    if final_report.trust_risk_score >= 50:
+        checklist.append("Place trust proof near price and CTA before launch.")
+    if not product.reviews_or_social_proof.strip():
+        checklist.append("Add verified reviews or previous work examples only when real.")
+    return _dedupe_short_list(checklist, limit=6)
+
+
 def _fallback_faq_items(
     product: ProductInput,
     final_report: SimulationReport,
@@ -259,6 +316,8 @@ def _fallback_faq_items(
         faq_items.append("What is the real return or warranty policy?")
     if final_report.price_resistance_score >= 40:
         faq_items.append("Why is this product worth the price?")
+    if final_report.price_justification_verdict:
+        faq_items.append("What proof supports the price positioning?")
     if final_report.trust_risk_score >= 40:
         faq_items.append("What proof or real customer feedback is available?")
     if not product.shipping_info:
@@ -266,6 +325,40 @@ def _fallback_faq_items(
     if not faq_items:
         faq_items.append("Who is this product best suited for?")
     return faq_items[:5]
+
+
+def _fallback_competitor_comparison(product: ProductInput) -> str:
+    """Suggest a competitor comparison from seller-provided context only."""
+    competitor = product.competitor_context
+    if competitor is None or not (
+        competitor.competitor_name
+        or competitor.competitor_price
+        or competitor.our_differentiator
+    ):
+        return "Competitor context was not provided; add one alternative product before writing a comparison."
+
+    gap = analyze_competitor_gap(product)
+    name = competitor.competitor_name or "the competitor"
+    if gap.price_gap and gap.price_gap > 0:
+        return (
+            f"Add a short comparison table against {name}: price gap, stated differentiator, "
+            "proof assets, warranty/return terms, and why the higher price is justified."
+        )
+    return (
+        f"Add a short comparison table against {name}: price, differentiator, proof assets, "
+        "support terms, and buyer risk reducers."
+    )
+
+
+def _fallback_missing_information_checklist(product: ProductInput) -> list[str]:
+    """Return category-critical missing information for the fix pack."""
+    missing = [
+        row["field_name"]
+        for row in build_category_expectation_check(product)
+        if row["status"] in {"missing", "weak"}
+    ]
+    missing.extend(product.known_limitations)
+    return _dedupe_short_list(missing, limit=8)
 
 
 def _fallback_call_to_action(product: ProductInput) -> str:
@@ -287,6 +380,10 @@ def _fallback_change_summary(
         changes.append("Clarified product details and value proposition.")
     if final_report.price_resistance_score >= 40:
         changes.append("Added stronger price and value justification.")
+    if final_report.required_fix_before_launch:
+        changes.append("Focused the fix pack on required fixes before launch.")
+    if final_report.launch_decision_summary:
+        changes.append(final_report.launch_decision_summary)
     if attention_map and attention_map.highest_friction_section:
         changes.append(f"Reduced friction in {attention_map.highest_friction_section}.")
     if not changes:

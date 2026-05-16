@@ -82,6 +82,11 @@ def test_launch_readiness_blocks_ready_when_category_and_price_proof_are_weak():
     )
     assert any("100 TRY more" in fix for fix in report.required_fix_before_launch)
     assert "not a real market prediction" in report.summary
+    assert "not ready to launch" in report.executive_verdict.lower()
+    assert "BuyerLab lost" in report.buyer_loss_summary
+    assert "799 TRY" in report.price_justification_verdict
+    assert "TuneGo Lite Pro" in report.competitor_gap_verdict
+    assert report.launch_decision_summary.startswith("Decision:")
 
 
 def test_category_expectation_check_uses_dashboard_ready_fields():
@@ -113,6 +118,16 @@ def test_launch_status_thresholds_and_critical_blockers():
         == "needs_fixes"
     )
     assert determine_launch_status(45, trust_risk_score=20, category_expectation_check=[]) == "not_ready"
+    assert (
+        determine_launch_status(
+            86,
+            trust_risk_score=20,
+            return_risk_score=82,
+            simulated_conversion_score=80,
+            category_expectation_check=[],
+        )
+        == "not_ready"
+    )
 
 
 def test_buyer_persona_verdicts_are_short_and_normalized():
