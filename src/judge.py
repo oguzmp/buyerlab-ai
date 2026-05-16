@@ -9,9 +9,14 @@ from typing import Any
 
 from src.gemini_client import generate_json
 from src.price_intelligence import (
+    analyze_competitor_gap,
     analyze_competitor_context,
     analyze_local_price_perception,
     build_structured_product_brief,
+)
+from src.launch_readiness import (
+    build_launch_readiness_report,
+    build_launch_readiness_summary as _build_launch_readiness_summary,
 )
 from src.prompts import JUDGE_PROMPT
 from src.state import AgentResponse, SimulationReport, SimulationState
@@ -178,6 +183,7 @@ def build_enhanced_judge_context(state: SimulationState) -> dict[str, Any]:
     clustered_objections = cluster_objections(state.first_round_responses)
     risk_scores = calculate_risk_scores(state.first_round_responses)
     price_perception_report = analyze_local_price_perception(state.product)
+    competitor_gap_report = analyze_competitor_gap(state.product)
     competitor_analysis = analyze_competitor_context(state.product, price_perception_report)
     risk_scores["price_resistance_score"] = max(
         risk_scores["price_resistance_score"],
@@ -185,6 +191,15 @@ def build_enhanced_judge_context(state: SimulationState) -> dict[str, Any]:
     )
     price_perception = asdict(price_perception_report)
     structured_product_brief = build_structured_product_brief(state.product)
+    launch_readiness_report = build_launch_readiness_report(
+        state=state,
+        risk_scores=risk_scores,
+        price_report=price_perception_report,
+        competitor_gap=competitor_gap_report,
+        buyer_loss_analysis=buyer_losses,
+        clustered_objections=clustered_objections,
+    )
+    launch_readiness = asdict(launch_readiness_report)
 
     return {
         "important_note": (
@@ -207,12 +222,19 @@ def build_enhanced_judge_context(state: SimulationState) -> dict[str, Any]:
         "risk_scores": risk_scores,
         "structured_product_brief": structured_product_brief,
         "price_perception": price_perception,
+        "competitor_gap": asdict(competitor_gap_report),
         "competitor_analysis": competitor_analysis,
+        "launch_readiness": launch_readiness,
         "prioritized_action_items": prioritize_action_items(
             state.first_round_responses,
             clustered_objections,
         ),
     }
+
+
+def build_launch_readiness_summary(report_inputs: dict[str, Any]) -> dict[str, Any]:
+    """Build a 10-second launch readiness summary from simulated diagnostics."""
+    return _build_launch_readiness_summary(report_inputs)
 
 
 def _build_judge_prompt(state: SimulationState) -> str:
@@ -240,6 +262,24 @@ Return only valid JSON for this exact report schema:
   "price_positioning_verdict": "",
   "competitor_gap_summary": "",
   "required_price_proofs": [],
+  "launch_readiness_score": 0,
+  "launch_status": "ready | needs_fixes | not_ready",
+  "executive_verdict": "",
+  "main_blocker": "",
+  "category_expectation_check": [
+    {{
+      "field_name": "",
+      "status": "present | missing | weak",
+      "impact": "high | medium | low",
+      "explanation": "",
+      "suggested_fix": ""
+    }}
+  ],
+  "local_price_perception_summary": "",
+  "buyer_persona_verdicts": [],
+  "top_conversion_blockers": [],
+  "required_fix_before_launch": [],
+  "next_best_actions": [],
   "summary": ""
 }}
 
@@ -251,6 +291,11 @@ Rules:
   product information, price/value objections, then emotional/copy improvements.
 - Include price_positioning_verdict, competitor_gap_summary, and
   required_price_proofs from the heuristic price and competitor context.
+- Include launch readiness fields. Use launch_status values only:
+  ready, needs_fixes, or not_ready.
+- Treat launch readiness as an AI-assisted diagnostic, not a real market prediction.
+- Make required_fix_before_launch concrete, such as exact specs, warranty,
+  return policy, proof assets, or competitor comparison fixes.
 """.strip()
 
 
@@ -262,6 +307,7 @@ def _simulation_report_from_json(
     enhanced_context = build_enhanced_judge_context(state)
     risk_scores = enhanced_context["risk_scores"]
     competitor_analysis = enhanced_context["competitor_analysis"]
+    launch_readiness = enhanced_context["launch_readiness"]
     fallback_score = _estimate_conversion_score(state.first_round_responses)
     conversion_score = _safe_score(
         raw_report.get("simulated_conversion_score", raw_report.get("conversion_score")),
@@ -270,6 +316,44 @@ def _simulation_report_from_json(
 
     return SimulationReport(
         simulated_conversion_score=conversion_score,
+        launch_readiness_score=launch_readiness["launch_readiness_score"],
+        launch_status=launch_readiness["launch_status"],
+        executive_verdict=_first_text(
+            raw_report.get("executive_verdict"),
+            launch_readiness["executive_verdict"],
+        ),
+        main_blocker=_first_text(
+            raw_report.get("main_blocker"),
+            launch_readiness["main_blocker"],
+        ),
+        category_expectation_check=_safe_dict_list(
+            raw_report.get("category_expectation_check"),
+            default=launch_readiness["category_expectation_check"],
+        ),
+        local_price_perception_summary=_first_text(
+            raw_report.get("local_price_perception_summary"),
+            launch_readiness["local_price_perception_summary"],
+        ),
+        competitor_gap_summary=_first_text(
+            raw_report.get("competitor_gap_summary"),
+            launch_readiness["competitor_gap_summary"],
+        ),
+        buyer_persona_verdicts=_safe_dict_list(
+            raw_report.get("buyer_persona_verdicts"),
+            default=launch_readiness["buyer_persona_verdicts"],
+        ),
+        top_conversion_blockers=_short_list(
+            raw_report.get("top_conversion_blockers"),
+            default=launch_readiness["top_conversion_blockers"],
+        ),
+        required_fix_before_launch=_short_list(
+            raw_report.get("required_fix_before_launch"),
+            default=launch_readiness["required_fix_before_launch"],
+        ),
+        next_best_actions=_short_list(
+            raw_report.get("next_best_actions"),
+            default=launch_readiness["next_best_actions"],
+        ),
         buyer_loss_reasons=_short_list(
             raw_report.get("buyer_loss_reasons"),
             raw_report.get("lost_customer_reasons"),
@@ -308,10 +392,6 @@ def _simulation_report_from_json(
             raw_report.get("price_positioning_verdict"),
             competitor_analysis["price_positioning_verdict"],
         ),
-        competitor_gap_summary=_first_text(
-            raw_report.get("competitor_gap_summary"),
-            competitor_analysis["competitor_gap_summary"],
-        ),
         required_price_proofs=_short_list(
             raw_report.get("required_price_proofs"),
             default=competitor_analysis["required_price_proofs"],
@@ -320,7 +400,7 @@ def _simulation_report_from_json(
             _first_text(
                 raw_report.get("summary"),
                 raw_report.get("dashboard_summary"),
-                "Simulation completed with mixed buyer intent.",
+                launch_readiness["summary"],
             )
         ),
     )
@@ -332,6 +412,7 @@ def _fallback_report(state: SimulationState, error: Exception | None = None) -> 
     enhanced_context = build_enhanced_judge_context(state)
     risk_scores = enhanced_context["risk_scores"]
     competitor_analysis = enhanced_context["competitor_analysis"]
+    launch_readiness = enhanced_context["launch_readiness"]
     conversion_score = _estimate_conversion_score(responses)
     buyer_loss_reasons = _fallback_loss_reasons(responses)
 
@@ -340,6 +421,17 @@ def _fallback_report(state: SimulationState, error: Exception | None = None) -> 
 
     return SimulationReport(
         simulated_conversion_score=conversion_score,
+        launch_readiness_score=launch_readiness["launch_readiness_score"],
+        launch_status=launch_readiness["launch_status"],
+        executive_verdict=launch_readiness["executive_verdict"],
+        main_blocker=launch_readiness["main_blocker"],
+        category_expectation_check=launch_readiness["category_expectation_check"],
+        local_price_perception_summary=launch_readiness["local_price_perception_summary"],
+        competitor_gap_summary=launch_readiness["competitor_gap_summary"],
+        buyer_persona_verdicts=launch_readiness["buyer_persona_verdicts"],
+        top_conversion_blockers=launch_readiness["top_conversion_blockers"],
+        required_fix_before_launch=launch_readiness["required_fix_before_launch"],
+        next_best_actions=launch_readiness["next_best_actions"],
         buyer_loss_reasons=buyer_loss_reasons[:5],
         winning_personas=_personas_by_decision(responses, "buy"),
         lost_personas=_personas_by_decision(responses, "reject"),
@@ -349,10 +441,107 @@ def _fallback_report(state: SimulationState, error: Exception | None = None) -> 
         return_risk_score=risk_scores["return_risk_score"],
         top_action_items=enhanced_context["prioritized_action_items"],
         price_positioning_verdict=competitor_analysis["price_positioning_verdict"],
-        competitor_gap_summary=competitor_analysis["competitor_gap_summary"],
         required_price_proofs=competitor_analysis["required_price_proofs"],
-        summary="Simulated conversion score uses fallback buyer-loss analysis.",
+        summary=launch_readiness["summary"],
     )
+
+
+def _buyer_persona_verdicts(responses: list[AgentResponse]) -> list[dict[str, Any]]:
+    """Return compact persona verdicts for launch readiness cards."""
+    return [
+        {
+            "persona_id": _safe_text(_response_value(response, "persona_id")),
+            "decision": _safe_decision(_response_value(response, "decision")),
+            "purchase_intent": _safe_score(_response_value(response, "purchase_intent")),
+            "reason": _safe_text(_response_value(response, "main_reason")),
+        }
+        for response in responses
+    ]
+
+
+def _launch_status(
+    launch_score: int,
+    missing_count: int,
+    risk_scores: dict[str, int],
+) -> str:
+    """Map launch readiness signals into a simple launch status."""
+    if launch_score >= 75 and missing_count <= 1 and risk_scores["trust_risk_score"] < 50:
+        return "ready"
+    if launch_score < 45 or risk_scores["trust_risk_score"] >= 75:
+        return "not_ready"
+    return "needs_fixes"
+
+
+def _top_conversion_blockers(
+    clustered_objections: dict[str, list[str]],
+    category_check: list[dict[str, str]],
+    price_perception: dict[str, Any],
+    competitor_gap: dict[str, Any],
+) -> list[str]:
+    """Collect the clearest blockers for a 10-second launch verdict."""
+    blockers: list[str] = []
+    missing_fields = [
+        item["field"] for item in category_check if item.get("status") == "missing"
+    ]
+    if missing_fields:
+        blockers.append(f"Missing category-required information: {', '.join(missing_fields[:3])}.")
+    if clustered_objections.get("trust_gap") or clustered_objections.get("social_proof_gap"):
+        blockers.append("Trust proof is weak for launch.")
+    if price_perception.get("perceived_value_risk", 0) >= 65:
+        blockers.append("Price justification is weak for the detected local price band.")
+    if competitor_gap.get("our_unproven_claims"):
+        blockers.append("Competitor differentiator is not backed by proof assets.")
+    if clustered_objections.get("shipping_or_return_concern"):
+        blockers.append("Shipping, warranty, or return terms need clearer risk reduction.")
+    return blockers[:5] or ["No major launch blocker identified in the simulated buyer assessment."]
+
+
+def _required_launch_fixes(
+    blockers: list[str],
+    competitor_gap: dict[str, Any],
+) -> list[str]:
+    """Turn blockers into required fixes before launch."""
+    fixes: list[str] = []
+    for blocker in blockers:
+        if "Missing category-required" in blocker:
+            fixes.append("Add the missing category-required details before launch.")
+        elif "Trust proof" in blocker:
+            fixes.append("Add authentic proof assets, warranty, support, and trust signals.")
+        elif "Price justification" in blocker:
+            fixes.append("Defend the price with benefits, proof, and clear total cost.")
+        elif "Competitor differentiator" in blocker:
+            fixes.append("Add evidence for the claimed competitor differentiator.")
+        elif "Shipping" in blocker:
+            fixes.append("Clarify shipping, warranty, return, or refund terms.")
+
+    for proof in competitor_gap.get("required_proofs_to_win", []):
+        _append_unique(fixes, _short_text(proof))
+
+    return fixes[:6] or ["No required fix identified before launch."]
+
+
+def _next_best_actions(required_fixes: list[str]) -> list[str]:
+    """Create concise next actions from required fixes."""
+    actions = []
+    for fix in required_fixes:
+        if "missing category" in fix.lower():
+            actions.append("Complete the structured product brief with category-specific details.")
+        elif "proof" in fix.lower():
+            actions.append("Upload or describe real proof assets before re-running the audit.")
+        elif "price" in fix.lower():
+            actions.append("Rewrite the value proposition around price defense and outcomes.")
+        elif "shipping" in fix.lower() or "return" in fix.lower():
+            actions.append("Make shipping, warranty, and returns visible near the CTA.")
+    return _short_list(actions, default=required_fixes, limit=5)
+
+
+def _executive_verdict(launch_status: str, main_blocker: str) -> str:
+    """Write a short executive launch verdict."""
+    if launch_status == "ready":
+        return "Launch readiness: Ready. Simulated buyer assessment found no major blocker."
+    if launch_status == "not_ready":
+        return f"Launch readiness: Not Ready. Main blocker: {main_blocker}"
+    return f"Launch readiness: Needs Fixes. Main blocker: {main_blocker}"
 
 
 def _buyer_loss_row(response: AgentResponse) -> dict[str, Any]:
@@ -510,6 +699,19 @@ def _safe_decision(value: Any) -> str:
     return "hesitate"
 
 
+def _safe_launch_status(value: Any, default: str = "needs_fixes") -> str:
+    """Normalize launch status labels from Gemini or fallback logic."""
+    if isinstance(value, str):
+        normalized = value.strip().lower()
+        if normalized in {"ready", "needs_fixes", "not_ready"}:
+            return normalized
+        if "not" in normalized:
+            return "not_ready"
+        if "ready" in normalized and "need" not in normalized:
+            return "ready"
+    return default if default in {"ready", "needs_fixes", "not_ready"} else "needs_fixes"
+
+
 def _safe_score(value: Any, default: int = 0) -> int:
     """Normalize a score into an integer from 0 to 100."""
     try:
@@ -517,6 +719,15 @@ def _safe_score(value: Any, default: int = 0) -> int:
     except (TypeError, ValueError):
         score = default
     return max(0, min(100, score))
+
+
+def _safe_dict_list(value: Any, default: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+    """Return a list of compact dictionaries from raw JSON or fallback."""
+    if isinstance(value, list):
+        rows = [dict(item) for item in value if isinstance(item, dict)]
+        if rows:
+            return rows[:8]
+    return (default or [])[:8]
 
 
 def _response_value(response: Any, field_name: str) -> Any:

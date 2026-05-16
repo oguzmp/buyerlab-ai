@@ -97,6 +97,7 @@ Add your Gemini API key to `.env`:
 
 ```text
 GEMINI_API_KEY=your_gemini_api_key_here
+GEMINI_MODEL=gemini-1.5-flash
 ```
 
 For demo or testing without an API key, enable mock mode:
@@ -115,6 +116,7 @@ streamlit run app.py
 
 - `GEMINI_API_KEY`: Gemini API key used for live AI responses.
 - `BUYERLAB_MOCK_MODE`: Set to `true` for deterministic demo output without calling Gemini.
+- `GEMINI_MODEL`: Optional Gemini model name. Defaults to `gemini-1.5-flash`.
 
 ## Project Structure
 

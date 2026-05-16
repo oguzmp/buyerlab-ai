@@ -1,60 +1,361 @@
 [
   {
-    "id": "audio-001",
-    "title": "AeroTune Wireless Headphones",
-    "name": "AeroTune Wireless Headphones",
-    "category": "Consumer Electronics",
-    "price": 89.0,
-    "currency": "USD",
-    "description": "Wireless over-ear headphones with active noise reduction, foldable design, and up to 32 hours of battery life.",
-    "target_audience": "Commuters, students, and remote workers who need focused listening on a budget.",
-    "value_proposition": "Comfortable everyday noise reduction without premium headphone pricing.",
-    "warranty_or_return_policy": "30-day returns and a 1-year limited hardware warranty.",
-    "shipping_info": "Standard shipping in 3-5 business days; shipping cost shown at checkout.",
+    "id": "wireless-headphones-try",
+    "name": "Wireless earbuds with missing warranty",
+    "brand": "SoundPeak",
+    "model": "AirBass X2",
+    "product_type": "Wireless earbuds",
+    "title": "SoundPeak AirBass X2 Wireless Earbuds",
+    "category": "Electronics accessory",
+    "normalized_category": "electronics_accessory",
+    "market_segment": "mid_range",
+    "intended_use_case": "Daily music, online meetings, commuting, and student use.",
+    "local_market": "Türkiye",
+    "price": 799.0,
+    "currency": "TRY",
+    "description": "Compact wireless earbuds positioned for daily listening and calls. The page claims clear microphone quality and long battery life, but does not yet show test proof.",
+    "target_audience": "Students and young professionals who want affordable daily earbuds.",
+    "value_proposition": "Daily wireless earbuds with practical call quality at a mid-range Türkiye price point.",
+    "warranty_or_return_policy": "Warranty terms are planned but not yet written clearly on the page.",
+    "shipping_info": "Ships across Türkiye; delivery time and shipping fee are not yet specified.",
     "trust_signals": [
       "Secure checkout",
-      "Clear warranty policy",
-      "Customer support email listed"
+      "Support email listed"
     ],
-    "reviews_or_social_proof": "Early tester quotes are being collected; no public reviews yet.",
-    "call_to_action": "Check availability",
-    "image_notes": "Hero image should show the headphones folded and worn by a commuter."
+    "reviews_or_social_proof": "Pre-launch product page with no public customer reviews yet.",
+    "call_to_action": "Join the launch list",
+    "image_notes": "Needs close-up product images, in-ear scale photos, and a clear charging case image.",
+    "competitor_context": {
+      "competitor_name": "TuneGo Lite Pro",
+      "competitor_price": 699.0,
+      "competitor_currency": "TRY",
+      "competitor_strengths": [
+        "Lower listed price",
+        "Battery life is stated more clearly"
+      ],
+      "competitor_weaknesses": [
+        "Less emphasis on microphone quality"
+      ],
+      "our_differentiator": "Claimed better microphone and longer battery life"
+    },
+    "proof_assets": [],
+    "known_limitations": [
+      "Warranty is unclear",
+      "Battery life is not specified",
+      "Microphone claim has no proof asset"
+    ]
   },
   {
-    "id": "running-001",
-    "title": "StrideLite Daily Running Shoes",
-    "name": "StrideLite Daily Running Shoes",
-    "category": "Footwear",
-    "price": 74.0,
-    "currency": "USD",
-    "description": "Lightweight road running shoes designed for short daily runs, walking, and gym commutes.",
-    "target_audience": "Beginner runners and active commuters who want one comfortable daily shoe.",
-    "value_proposition": "A simple everyday running shoe with breathable comfort and practical pricing.",
+    "id": "running-shoes-try",
+    "name": "Running shoes with size/fit risk",
+    "brand": "StrideLite",
+    "model": "Daily Run",
+    "product_type": "Daily running shoes",
+    "title": "StrideLite Daily Run Shoes",
+    "category": "Fashion shoes",
+    "normalized_category": "fashion_shoes",
+    "market_segment": "upper_mid",
+    "intended_use_case": "Short daily runs, walking, gym commutes, and weekend errands.",
+    "local_market": "Türkiye",
+    "price": 3490.0,
+    "currency": "TRY",
+    "description": "Lightweight road running shoes designed for daily use. The page mentions breathable comfort but needs more fit and material detail.",
+    "target_audience": "Beginner runners and active commuters looking for one comfortable daily shoe.",
+    "value_proposition": "A daily running shoe that balances breathable comfort and everyday styling.",
+    "warranty_or_return_policy": "",
+    "shipping_info": "Standard shipping is planned; fee and delivery time are not yet shown.",
+    "trust_signals": [],
+    "reviews_or_social_proof": "No public customer reviews yet.",
+    "call_to_action": "Join the launch list",
+    "image_notes": "Needs side, sole, on-foot, and size reference photos.",
+    "competitor_context": {
+      "competitor_name": "RoadFlex Basic",
+      "competitor_price": 2990.0,
+      "competitor_currency": "TRY",
+      "competitor_strengths": [
+        "Lower price",
+        "Visible size guide",
+        "Exchange policy shown"
+      ],
+      "competitor_weaknesses": [
+        "Less lifestyle positioning"
+      ],
+      "our_differentiator": "Lighter everyday commute positioning"
+    },
+    "proof_assets": [],
+    "known_limitations": [
+      "Size guide is missing",
+      "Return policy is missing",
+      "Material detail is thin"
+    ]
+  },
+  {
+    "id": "coffee-machine-try",
+    "name": "Coffee machine with premium price pressure",
+    "brand": "BrewNest",
+    "model": "MiniBarista 4",
+    "product_type": "Compact espresso machine",
+    "title": "BrewNest MiniBarista 4 Coffee Machine",
+    "category": "Small home appliance",
+    "normalized_category": "small_home_appliance",
+    "market_segment": "upper_mid",
+    "intended_use_case": "Small kitchens, home office coffee breaks, and first-time espresso users.",
+    "local_market": "Türkiye",
+    "price": 6890.0,
+    "currency": "TRY",
+    "description": "A compact espresso machine for small kitchens. The page explains the space-saving design but needs clearer technical specifications and service details.",
+    "target_audience": "Home coffee drinkers who want espresso without a large countertop machine.",
+    "value_proposition": "A compact home espresso setup for small kitchens without premium machine pricing.",
+    "warranty_or_return_policy": "2-year limited warranty draft available; service process is not fully explained.",
+    "shipping_info": "Free shipping is planned for launch week.",
+    "trust_signals": [
+      "Warranty planned",
+      "Secure checkout"
+    ],
+    "reviews_or_social_proof": "No public customer reviews yet; internal product photos are available.",
+    "call_to_action": "Reserve for launch",
+    "image_notes": "Show countertop scale, water tank, portafilter, and cup clearance.",
+    "competitor_context": {
+      "competitor_name": "CafePod Compact",
+      "competitor_price": 5990.0,
+      "competitor_currency": "TRY",
+      "competitor_strengths": [
+        "Lower price",
+        "Service network described"
+      ],
+      "competitor_weaknesses": [
+        "Less compact design"
+      ],
+      "our_differentiator": "Smaller footprint and easier home-office positioning"
+    },
+    "proof_assets": [
+      "Product photos",
+      "Warranty draft"
+    ],
+    "known_limitations": [
+      "Technical specifications are incomplete",
+      "Service terms need detail"
+    ]
+  },
+  {
+    "id": "handmade-bag-try",
+    "name": "Handmade leather bag with authenticity concerns",
+    "brand": "Atelier Mira",
+    "model": "City Tote",
+    "product_type": "Handmade leather tote bag",
+    "title": "Atelier Mira City Tote",
+    "category": "Handmade bag",
+    "normalized_category": "handmade_bag",
+    "market_segment": "premium",
+    "intended_use_case": "Daily work carry, cafe work sessions, and weekend city use.",
+    "local_market": "Türkiye",
+    "price": 5200.0,
+    "currency": "TRY",
+    "description": "A handmade tote bag made for laptop, notebook, and daily carry. The page highlights craftsmanship but needs dimensions and material proof.",
+    "target_audience": "Urban professionals who prefer handmade accessories over mass-market bags.",
+    "value_proposition": "Handmade daily carry with a refined work-friendly design.",
+    "warranty_or_return_policy": "Returns accepted for unused items within 14 days.",
+    "shipping_info": "Made to order; ships in 5-7 business days.",
+    "trust_signals": [
+      "Maker story planned",
+      "Return terms visible"
+    ],
+    "reviews_or_social_proof": "No public reviews yet; workshop photos are available.",
+    "call_to_action": "Pre-order the tote",
+    "image_notes": "Needs leather closeups, inside capacity photos, and laptop-fit image.",
+    "competitor_context": {
+      "competitor_name": "UrbanCraft Tote",
+      "competitor_price": 4600.0,
+      "competitor_currency": "TRY",
+      "competitor_strengths": [
+        "Lower price",
+        "Dimensions listed"
+      ],
+      "competitor_weaknesses": [
+        "Less distinctive maker story"
+      ],
+      "our_differentiator": "Handmade finish and cleaner work-carry design"
+    },
+    "proof_assets": [
+      "Workshop photos",
+      "Return terms"
+    ],
+    "known_limitations": [
+      "Exact dimensions are not listed",
+      "Material grade is not explained"
+    ]
+  },
+  {
+    "id": "web-design-service-try",
+    "name": "Web design service with vague scope",
+    "brand": "PixelSprint",
+    "model": "Launch Page Sprint",
+    "product_type": "Landing page design service",
+    "title": "PixelSprint Launch Page Sprint",
+    "category": "Digital service",
+    "normalized_category": "digital_service",
+    "market_segment": "mid_range",
+    "intended_use_case": "Early-stage founders preparing a product landing page before ads or outreach.",
+    "local_market": "Türkiye",
+    "price": 12000.0,
+    "currency": "TRY",
+    "description": "A focused landing page design service for founders. The page describes the outcome but needs clearer scope, revision terms, and portfolio proof.",
+    "target_audience": "Founders, makers, and small teams launching a new offer.",
+    "value_proposition": "A launch-ready landing page without hiring a full design team.",
+    "warranty_or_return_policy": "Includes one revision round; refund terms are not specified.",
+    "shipping_info": "Digital delivery in 7 business days after brief approval.",
+    "trust_signals": [
+      "Delivery timeline stated",
+      "Support email listed"
+    ],
+    "reviews_or_social_proof": "Portfolio examples are planned but not yet linked.",
+    "call_to_action": "Book a launch sprint",
+    "image_notes": "Show before-after page examples and deliverable preview.",
+    "competitor_context": {
+      "competitor_name": "LaunchCraft Studio",
+      "competitor_price": 15000.0,
+      "competitor_currency": "TRY",
+      "competitor_strengths": [
+        "Portfolio examples",
+        "Clear package scope"
+      ],
+      "competitor_weaknesses": [
+        "Higher price"
+      ],
+      "our_differentiator": "Faster delivery and simpler founder-focused package"
+    },
+    "proof_assets": [],
+    "known_limitations": [
+      "Portfolio proof is missing",
+      "Included and excluded items are not fully listed"
+    ]
+  },
+  {
+    "id": "online-course-try",
+    "name": "Online course with weak instructor proof",
+    "brand": "CreatorPath",
+    "model": "First Launch",
+    "product_type": "Online course",
+    "title": "CreatorPath First Launch Course",
+    "category": "Online course",
+    "normalized_category": "online_course",
+    "market_segment": "premium",
+    "intended_use_case": "Creators building their first digital product launch plan.",
+    "local_market": "Türkiye",
+    "price": 9500.0,
+    "currency": "TRY",
+    "description": "An online course for creators preparing a first launch. The page outlines weekly modules but needs stronger outcome proof and support expectations.",
+    "target_audience": "Creators, freelancers, and educators preparing a first digital product.",
+    "value_proposition": "A structured path from idea to launch page, offer, and first outreach plan.",
+    "warranty_or_return_policy": "Refund policy is not yet finalized.",
+    "shipping_info": "Digital access starts after enrollment; support terms need detail.",
+    "trust_signals": [
+      "Instructor bio planned",
+      "Curriculum outline drafted"
+    ],
+    "reviews_or_social_proof": "No public student outcomes yet.",
+    "call_to_action": "Join the next cohort",
+    "image_notes": "Show course dashboard, module outline, worksheets, and instructor profile.",
+    "competitor_context": {
+      "competitor_name": "LaunchSchool Lite",
+      "competitor_price": 7000.0,
+      "competitor_currency": "TRY",
+      "competitor_strengths": [
+        "Lower price",
+        "Student examples shown"
+      ],
+      "competitor_weaknesses": [
+        "Less live feedback"
+      ],
+      "our_differentiator": "Live feedback sessions and launch templates"
+    },
+    "proof_assets": [],
+    "known_limitations": [
+      "No public student outcomes",
+      "Refund policy is unclear",
+      "Live support hours are not specified"
+    ]
+  },
+  {
+    "id": "overpriced-pencil-edge",
+    "name": "Overpriced pencil edge case",
+    "brand": "LineLux",
+    "model": "Mono One",
+    "product_type": "Single graphite pencil",
+    "title": "LineLux Mono One Pencil",
+    "category": "General product",
+    "normalized_category": "general_product",
+    "market_segment": "premium",
+    "intended_use_case": "Daily note-taking and desk aesthetics.",
+    "local_market": "Türkiye",
+    "price": 4500.0,
+    "currency": "TRY",
+    "description": "A single graphite pencil presented as a premium desk object. The page uses lifestyle copy but gives almost no proof of material, origin, or durability.",
+    "target_audience": "Design-focused desk setup buyers.",
+    "value_proposition": "A refined pencil for people who care about the feel of their desk tools.",
     "warranty_or_return_policy": "",
     "shipping_info": "",
     "trust_signals": [],
-    "reviews_or_social_proof": "Pre-launch product with no customer reviews yet.",
-    "call_to_action": "Join the launch list",
-    "image_notes": "Needs clear sole, side, and on-foot images to show cushioning and fit."
+    "reviews_or_social_proof": "",
+    "call_to_action": "Buy the pencil",
+    "image_notes": "Only one dark mood image is planned.",
+    "competitor_context": {
+      "competitor_name": "DeskMark Premium Set",
+      "competitor_price": 450.0,
+      "competitor_currency": "TRY",
+      "competitor_strengths": [
+        "Includes multiple pencils",
+        "Much lower price"
+      ],
+      "competitor_weaknesses": [
+        "Less premium positioning"
+      ],
+      "our_differentiator": "Minimalist design object positioning"
+    },
+    "proof_assets": [],
+    "known_limitations": [
+      "Price is unusually high for a simple product",
+      "No material proof",
+      "No return policy",
+      "No shipping information"
+    ]
   },
   {
-    "id": "desk-001",
-    "title": "FocusFlow Desk Mat",
-    "name": "FocusFlow Desk Mat",
-    "category": "Home Office",
-    "price": 39.0,
-    "currency": "USD",
-    "description": "A washable desk mat with task zones for a laptop, notebook, mouse, and daily priorities.",
-    "target_audience": "Remote workers who want a calmer and more organized desk setup.",
-    "value_proposition": "Turns a cluttered desk into a simple visual workspace without adding another app.",
-    "warranty_or_return_policy": "Unused items can be returned within 30 days.",
-    "shipping_info": "Ships flat in recyclable packaging; estimated delivery is 4-7 business days.",
-    "trust_signals": [
-      "Secure checkout",
-      "Return policy visible before purchase"
-    ],
-    "reviews_or_social_proof": "No public reviews yet; intended for pre-launch page testing.",
-    "call_to_action": "Organize my desk",
-    "image_notes": "Show a realistic desk setup with laptop, notebook, and mouse for scale."
+    "id": "empty-product-page-edge",
+    "name": "Empty product page edge case",
+    "brand": "",
+    "model": "",
+    "product_type": "",
+    "title": "Untitled Product Draft",
+    "category": "General product",
+    "normalized_category": "general_product",
+    "market_segment": "mid_range",
+    "intended_use_case": "",
+    "local_market": "Türkiye",
+    "price": 999.0,
+    "currency": "TRY",
+    "description": "",
+    "target_audience": "",
+    "value_proposition": "",
+    "warranty_or_return_policy": "",
+    "shipping_info": "",
+    "trust_signals": [],
+    "reviews_or_social_proof": "",
+    "call_to_action": "",
+    "image_notes": "",
+    "competitor_context": {
+      "competitor_name": "",
+      "competitor_price": null,
+      "competitor_currency": "TRY",
+      "competitor_strengths": [],
+      "competitor_weaknesses": [],
+      "our_differentiator": ""
+    },
+    "proof_assets": [],
+    "known_limitations": [
+      "Product identity is missing",
+      "Page copy is empty",
+      "No trust signals"
+    ]
   }
 ]

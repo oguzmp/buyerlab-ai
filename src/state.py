@@ -3,13 +3,14 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Literal
+from typing import Any, Literal
 
 
 Decision = Literal["buy", "reject", "hesitate"]
 DebateStance = Literal["support", "oppose", "neutral"]
 SectionSentiment = Literal["positive", "neutral", "negative"]
 PriceBand = Literal["budget", "mid_range", "upper_mid", "premium", "irrational"]
+LaunchStatus = Literal["ready", "needs_fixes", "not_ready"]
 NormalizedCategory = Literal[
     "electronics_accessory",
     "fashion_shoes",
@@ -55,7 +56,10 @@ class CategoryProfile:
     normalized_category: NormalizedCategory = "general_product"
     display_name: str = "General product"
     typical_customer_expectations: list[str] = field(default_factory=list)
-    critical_information_fields: list[str] = field(default_factory=list)
+    required_information_fields: list[str] = field(default_factory=list)
+    common_conversion_blockers: list[str] = field(default_factory=list)
+    common_return_risks: list[str] = field(default_factory=list)
+    recommended_trust_signals: list[str] = field(default_factory=list)
     default_persona_weights: dict[str, float] = field(default_factory=dict)
     try_price_bands: tuple[float, float, float, float] = (500, 1_500, 3_500, 8_000)
 
@@ -81,17 +85,37 @@ class CompetitorContext:
 
     competitor_name: str = ""
     competitor_price: float | None = None
+    competitor_currency: str = ""
     competitor_strengths: list[str] = field(default_factory=list)
     competitor_weaknesses: list[str] = field(default_factory=list)
     our_differentiator: str = ""
 
 
 @dataclass(slots=True)
+class CompetitorGapReport:
+    """Heuristic gap analysis based only on seller-provided competitor context."""
+
+    price_gap: float | None = None
+    value_gap_summary: str = ""
+    competitor_advantage: str = ""
+    our_unproven_claims: list[str] = field(default_factory=list)
+    required_proofs_to_win: list[str] = field(default_factory=list)
+    competitor_positioning_comment: str = ""
+
+
+@dataclass(slots=True)
 class ProductInput:
     """Product or service page content being tested before launch."""
 
+    brand: str = ""
+    model: str = ""
+    product_type: str = ""
     title: str = ""
     category: str = ""
+    normalized_category: str = ""
+    market_segment: str = ""
+    intended_use_case: str = ""
+    local_market: str = ""
     price: float = 0.0
     currency: str = "USD"
     description: str = ""
@@ -104,6 +128,8 @@ class ProductInput:
     call_to_action: str = ""
     image_notes: str | None = None
     competitor_context: CompetitorContext | None = None
+    proof_assets: list[str] = field(default_factory=list)
+    known_limitations: list[str] = field(default_factory=list)
 
 
 @dataclass(slots=True)
@@ -216,10 +242,53 @@ class PricePerceptionReport:
 
 
 @dataclass(slots=True)
+class LaunchReadinessReport:
+    """AI-assisted launch readiness diagnostic, not a real market prediction."""
+
+    launch_readiness_score: int = 0
+    launch_status: LaunchStatus = "needs_fixes"
+    executive_verdict: str = ""
+    main_blocker: str = ""
+    simulated_conversion_score: int = 0
+    trust_risk_score: int = 0
+    price_resistance_score: int = 0
+    clarity_score: int = 0
+    return_risk_score: int = 0
+    category_expectation_check: list[dict[str, Any]] = field(default_factory=list)
+    local_price_perception_summary: str = ""
+    competitor_gap_summary: str = ""
+    buyer_persona_verdicts: list[dict[str, Any]] = field(default_factory=list)
+    top_conversion_blockers: list[str] = field(default_factory=list)
+    required_fix_before_launch: list[str] = field(default_factory=list)
+    next_best_actions: list[str] = field(default_factory=list)
+    summary: str = ""
+
+    def __post_init__(self) -> None:
+        _validate_score("launch_readiness_score", self.launch_readiness_score)
+        _validate_literal("launch_status", self.launch_status, {"ready", "needs_fixes", "not_ready"})
+        _validate_score("simulated_conversion_score", self.simulated_conversion_score)
+        _validate_score("trust_risk_score", self.trust_risk_score)
+        _validate_score("price_resistance_score", self.price_resistance_score)
+        _validate_score("clarity_score", self.clarity_score)
+        _validate_score("return_risk_score", self.return_risk_score)
+
+
+@dataclass(slots=True)
 class SimulationReport:
-    """Final judge report summarizing simulated conversion performance."""
+    """Final judge report summarizing simulated conversion and launch readiness."""
 
     simulated_conversion_score: int = 0
+    launch_readiness_score: int = 0
+    launch_status: LaunchStatus = "needs_fixes"
+    executive_verdict: str = ""
+    main_blocker: str = ""
+    category_expectation_check: list[dict[str, Any]] = field(default_factory=list)
+    local_price_perception_summary: str = ""
+    competitor_gap_summary: str = ""
+    buyer_persona_verdicts: list[dict[str, Any]] = field(default_factory=list)
+    top_conversion_blockers: list[str] = field(default_factory=list)
+    required_fix_before_launch: list[str] = field(default_factory=list)
+    next_best_actions: list[str] = field(default_factory=list)
     buyer_loss_reasons: list[str] = field(default_factory=list)
     winning_personas: list[str] = field(default_factory=list)
     lost_personas: list[str] = field(default_factory=list)
@@ -229,12 +298,13 @@ class SimulationReport:
     return_risk_score: int = 0
     top_action_items: list[str] = field(default_factory=list)
     price_positioning_verdict: str = ""
-    competitor_gap_summary: str = ""
     required_price_proofs: list[str] = field(default_factory=list)
     summary: str = ""
 
     def __post_init__(self) -> None:
         _validate_score("simulated_conversion_score", self.simulated_conversion_score)
+        _validate_score("launch_readiness_score", self.launch_readiness_score)
+        _validate_literal("launch_status", self.launch_status, {"ready", "needs_fixes", "not_ready"})
         _validate_score("trust_risk_score", self.trust_risk_score)
         _validate_score("price_resistance_score", self.price_resistance_score)
         _validate_score("clarity_score", self.clarity_score)

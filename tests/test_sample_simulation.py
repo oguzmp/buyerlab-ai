@@ -3,8 +3,11 @@ import os
 from pathlib import Path
 
 from src.graph import run_sample_simulation
+from src.category_intelligence import build_category_expectation_check
 from src.price_intelligence import (
+    analyze_competitor_gap,
     analyze_local_price_perception,
+    build_product_brief_context,
     build_price_context_for_prompt,
     build_structured_product_brief,
     detect_price_band,
@@ -21,13 +24,30 @@ DATA_PATH = Path(__file__).parents[1] / "data" / "sample_products.json"
 def test_sample_products_are_valid_and_safe():
     products = json.loads(DATA_PATH.read_text(encoding="utf-8"))
 
-    assert len(products) >= 2
+    assert len(products) >= 8
+    assert {product["name"] for product in products} >= {
+        "Wireless earbuds with missing warranty",
+        "Running shoes with size/fit risk",
+        "Coffee machine with premium price pressure",
+        "Handmade leather bag with authenticity concerns",
+        "Web design service with vague scope",
+        "Online course with weak instructor proof",
+        "Overpriced pencil edge case",
+        "Empty product page edge case",
+    }
     assert any(not product["trust_signals"] for product in products)
     assert any(not product["shipping_info"] for product in products)
 
     required_fields = {
         "title",
+        "brand",
+        "model",
+        "product_type",
         "category",
+        "normalized_category",
+        "market_segment",
+        "intended_use_case",
+        "local_market",
         "price",
         "currency",
         "description",
@@ -39,10 +59,15 @@ def test_sample_products_are_valid_and_safe():
         "reviews_or_social_proof",
         "call_to_action",
         "image_notes",
+        "competitor_context",
+        "proof_assets",
+        "known_limitations",
     }
     for product in products:
         assert required_fields <= product.keys()
         assert isinstance(product["trust_signals"], list)
+        assert isinstance(product["proof_assets"], list)
+        assert isinstance(product["known_limitations"], list)
         assert "certified" not in json.dumps(product).lower()
 
 
@@ -80,6 +105,7 @@ def test_try_price_perception_uses_local_heuristics_without_conversion():
         category="Footwear",
         price=4200,
         currency="TRY",
+        product_type="Daily running shoes",
         description="Lightweight daily shoes.",
         value_proposition="Comfortable everyday support.",
     )
@@ -99,10 +125,16 @@ def test_try_price_perception_uses_local_heuristics_without_conversion():
     assert "not live market research" in prompt_context
 
 
-def test_category_profile_and_competitor_context_feed_business_brief():
+def test_product_identity_and_competitor_context_feed_business_brief():
     product = ProductInput(
+        brand="CreatorLab",
+        model="Launch Sprint",
+        product_type="Online course",
         title="Creator Course",
         category="online workshop",
+        market_segment="premium",
+        intended_use_case="Creators launching their first digital product.",
+        local_market="Turkey",
         price=9500,
         currency="TRY",
         description="A practical creator course with weekly lessons.",
@@ -114,14 +146,22 @@ def test_category_profile_and_competitor_context_feed_business_brief():
             competitor_weaknesses=["Less hands-on feedback"],
             our_differentiator="Live feedback sessions and launch templates",
         ),
+        proof_assets=[],
+        known_limitations=["No public student outcomes yet"],
     )
 
     brief = build_structured_product_brief(product)
+    context = build_product_brief_context(product)
     profile = get_category_profile(product.category)
+    competitor_gap = analyze_competitor_gap(product)
+    expectation_check = build_category_expectation_check(product)
 
     assert normalize_category("online workshop") == "online_course"
     assert profile.display_name == "Online course"
     assert brief["normalized_category"] == "online_course"
-    assert brief["competitor_analysis"]["has_competitor_context"] is True
-    assert "above" in brief["competitor_analysis"]["competitor_gap_summary"]
+    assert brief["product_identity"]["brand"] == "CreatorLab"
+    assert brief["competitor_gap"]["price_gap"] == 2500
+    assert "above" in competitor_gap.value_gap_summary
     assert brief["price_perception"]["price_band"] == "premium"
+    assert "heuristic local price perception" in context
+    assert any(item["field"] == "student proof" for item in expectation_check)

@@ -13,7 +13,7 @@ except ImportError:  # pragma: no cover - dependency is listed for local runs.
     load_dotenv = None
 
 
-DEFAULT_GEMINI_MODEL = "gemini-2.0-flash"
+DEFAULT_GEMINI_MODEL = "gemini-1.5-flash"
 MOCK_JSON_RESPONSE: dict[str, Any] = {
     "mock_mode": True,
     "decision": "hesitate",
@@ -46,8 +46,15 @@ def generate_text(prompt: str) -> str:
         return json.dumps(MOCK_JSON_RESPONSE)
 
     client = _create_client()
-    model = os.getenv("GEMINI_MODEL", DEFAULT_GEMINI_MODEL)
-    response = client.models.generate_content(model=model, contents=prompt)
+    model = _configured_model()
+
+    try:
+        response = client.models.generate_content(model=model, contents=prompt)
+    except Exception as exc:  # pragma: no cover - depends on remote API behavior.
+        raise GeminiClientError(
+            f"Gemini request failed safely: {_safe_error_message(exc)}"
+        ) from exc
+
     text = getattr(response, "text", None)
 
     if not text:
@@ -64,6 +71,41 @@ def generate_json(prompt: str) -> dict[str, Any]:
         return dict(MOCK_JSON_RESPONSE)
 
     return _extract_json_object(generate_text(prompt))
+
+
+def check_gemini_connection() -> dict[str, Any]:
+    """Return safe Gemini readiness status without exposing secrets."""
+    if _mock_mode_enabled():
+        return {
+            "ok": True,
+            "mode": "mock",
+            "model": _configured_model(),
+            "message": "Mock mode is enabled; Gemini API will not be called.",
+        }
+
+    try:
+        _create_client()
+    except MissingGeminiApiKeyError as exc:
+        return {
+            "ok": False,
+            "mode": "live",
+            "model": _configured_model(),
+            "message": str(exc),
+        }
+    except GeminiClientError as exc:
+        return {
+            "ok": False,
+            "mode": "live",
+            "model": _configured_model(),
+            "message": str(exc),
+        }
+
+    return {
+        "ok": True,
+        "mode": "live",
+        "model": _configured_model(),
+        "message": "Gemini client is ready.",
+    }
 
 
 def _create_client() -> Any:
@@ -85,6 +127,12 @@ def _create_client() -> Any:
         ) from exc
 
     return genai.Client(api_key=api_key)
+
+
+def _configured_model() -> str:
+    """Read the configured Gemini model, using a fast demo-friendly default."""
+    _load_env()
+    return os.getenv("GEMINI_MODEL", DEFAULT_GEMINI_MODEL).strip() or DEFAULT_GEMINI_MODEL
 
 
 def _extract_json_object(response_text: str) -> dict[str, Any]:
@@ -149,10 +197,24 @@ def _validate_prompt(prompt: str) -> str:
 def _mock_mode_enabled() -> bool:
     """Return True when deterministic local mock responses should be used."""
     _load_env()
-    return os.getenv("BUYERLAB_MOCK_MODE", "").strip().lower() == "true"
+    return os.getenv("BUYERLAB_MOCK_MODE", "").strip().lower() in {
+        "1",
+        "true",
+        "yes",
+        "on",
+    }
 
 
 def _load_env() -> None:
-    """Load local environment variables when python-dotenv is available."""
+    """Load local .env values without printing or exposing environment secrets."""
     if load_dotenv is not None:
         load_dotenv()
+
+
+def _safe_error_message(exc: Exception) -> str:
+    """Format remote/client errors without leaking configured secrets."""
+    message = str(exc).splitlines()[0] if str(exc) else exc.__class__.__name__
+    api_key = os.getenv("GEMINI_API_KEY", "")
+    if api_key:
+        message = message.replace(api_key, "[redacted]")
+    return message[:180]

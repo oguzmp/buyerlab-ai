@@ -6,7 +6,7 @@ from typing import Any
 
 from src.agents import run_debate_round, run_initial_buyer_round
 from src.judge import run_judge_report
-from src.price_intelligence import apply_category_persona_weights
+from src.category_intelligence import apply_category_persona_weights, normalize_category
 from src.state import CompetitorContext, ProductInput, SimulationState, create_empty_state
 
 
@@ -39,8 +39,17 @@ def _coerce_product_input(product: ProductInput | dict[str, Any]) -> ProductInpu
         return product
 
     return ProductInput(
+        brand=str(product.get("brand", "")),
+        model=str(product.get("model", "")),
+        product_type=str(product.get("product_type", "")),
         title=str(product.get("title", product.get("name", ""))),
         category=str(product.get("category", "")),
+        normalized_category=str(
+            product.get("normalized_category", normalize_category(str(product.get("category", ""))))
+        ),
+        market_segment=str(product.get("market_segment", "")),
+        intended_use_case=str(product.get("intended_use_case", "")),
+        local_market=str(product.get("local_market", "")),
         price=float(product.get("price", 0.0)),
         currency=str(product.get("currency", "USD")),
         description=str(product.get("description", "")),
@@ -53,6 +62,8 @@ def _coerce_product_input(product: ProductInput | dict[str, Any]) -> ProductInpu
         call_to_action=str(product.get("call_to_action", "")),
         image_notes=product.get("image_notes"),
         competitor_context=_coerce_competitor_context(product.get("competitor_context")),
+        proof_assets=_coerce_string_list(product.get("proof_assets", [])),
+        known_limitations=_coerce_string_list(product.get("known_limitations", [])),
     )
 
 
@@ -75,6 +86,7 @@ def _coerce_competitor_context(value: Any) -> CompetitorContext | None:
     return CompetitorContext(
         competitor_name=str(value.get("competitor_name", "")),
         competitor_price=_coerce_optional_float(value.get("competitor_price")),
+        competitor_currency=str(value.get("competitor_currency", "")),
         competitor_strengths=_coerce_string_list(value.get("competitor_strengths", [])),
         competitor_weaknesses=_coerce_string_list(value.get("competitor_weaknesses", [])),
         our_differentiator=str(value.get("our_differentiator", "")),
