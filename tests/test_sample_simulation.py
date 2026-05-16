@@ -6,9 +6,13 @@ from src.graph import run_sample_simulation
 from src.price_intelligence import (
     analyze_local_price_perception,
     build_price_context_for_prompt,
+    build_structured_product_brief,
     detect_price_band,
+    get_category_profile,
+    normalize_category,
+    normalize_currency,
 )
-from src.state import PAGE_SECTION_NAMES, ProductInput
+from src.state import PAGE_SECTION_NAMES, CompetitorContext, ProductInput
 
 
 DATA_PATH = Path(__file__).parents[1] / "data" / "sample_products.json"
@@ -84,8 +88,40 @@ def test_try_price_perception_uses_local_heuristics_without_conversion():
     prompt_context = build_price_context_for_prompt(product)
 
     assert detect_price_band(4200, "TRY", "Footwear") == "upper_mid"
+    assert normalize_currency("TL") == "TRY"
     assert report.local_market == "Turkey"
+    assert report.currency == "TRY"
+    assert report.normalized_category == "fashion_shoes"
     assert report.price_band == "upper_mid"
     assert report.perceived_value_risk >= 70
-    assert any("TL price" in question for question in report.expected_customer_questions)
+    assert any("TRY price" in question for question in report.expected_customer_questions)
+    assert "TL price" not in prompt_context
     assert "not live market research" in prompt_context
+
+
+def test_category_profile_and_competitor_context_feed_business_brief():
+    product = ProductInput(
+        title="Creator Course",
+        category="online workshop",
+        price=9500,
+        currency="TRY",
+        description="A practical creator course with weekly lessons.",
+        value_proposition="Helps creators package and sell their first digital product.",
+        competitor_context=CompetitorContext(
+            competitor_name="Comparable course",
+            competitor_price=7000,
+            competitor_strengths=["Larger lesson library"],
+            competitor_weaknesses=["Less hands-on feedback"],
+            our_differentiator="Live feedback sessions and launch templates",
+        ),
+    )
+
+    brief = build_structured_product_brief(product)
+    profile = get_category_profile(product.category)
+
+    assert normalize_category("online workshop") == "online_course"
+    assert profile.display_name == "Online course"
+    assert brief["normalized_category"] == "online_course"
+    assert brief["competitor_analysis"]["has_competitor_context"] is True
+    assert "above" in brief["competitor_analysis"]["competitor_gap_summary"]
+    assert brief["price_perception"]["price_band"] == "premium"

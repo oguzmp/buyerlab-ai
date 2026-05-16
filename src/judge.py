@@ -8,7 +8,11 @@ from statistics import mean
 from typing import Any
 
 from src.gemini_client import generate_json
-from src.price_intelligence import analyze_local_price_perception
+from src.price_intelligence import (
+    analyze_competitor_context,
+    analyze_local_price_perception,
+    build_structured_product_brief,
+)
 from src.prompts import JUDGE_PROMPT
 from src.state import AgentResponse, SimulationReport, SimulationState
 
@@ -174,11 +178,13 @@ def build_enhanced_judge_context(state: SimulationState) -> dict[str, Any]:
     clustered_objections = cluster_objections(state.first_round_responses)
     risk_scores = calculate_risk_scores(state.first_round_responses)
     price_perception_report = analyze_local_price_perception(state.product)
+    competitor_analysis = analyze_competitor_context(state.product, price_perception_report)
     risk_scores["price_resistance_score"] = max(
         risk_scores["price_resistance_score"],
         price_perception_report.perceived_value_risk,
     )
     price_perception = asdict(price_perception_report)
+    structured_product_brief = build_structured_product_brief(state.product)
 
     return {
         "important_note": (
@@ -199,7 +205,9 @@ def build_enhanced_judge_context(state: SimulationState) -> dict[str, Any]:
         "buyer_loss_analysis": buyer_losses,
         "clustered_objections": clustered_objections,
         "risk_scores": risk_scores,
+        "structured_product_brief": structured_product_brief,
         "price_perception": price_perception,
+        "competitor_analysis": competitor_analysis,
         "prioritized_action_items": prioritize_action_items(
             state.first_round_responses,
             clustered_objections,
@@ -229,6 +237,9 @@ Return only valid JSON for this exact report schema:
   "clarity_score": 0,
   "return_risk_score": 0,
   "top_action_items": [],
+  "price_positioning_verdict": "",
+  "competitor_gap_summary": "",
+  "required_price_proofs": [],
   "summary": ""
 }}
 
@@ -238,6 +249,8 @@ Rules:
 - Keep all arrays to 5 short dashboard-ready items or fewer.
 - Order top_action_items by business impact: trust blockers, missing critical
   product information, price/value objections, then emotional/copy improvements.
+- Include price_positioning_verdict, competitor_gap_summary, and
+  required_price_proofs from the heuristic price and competitor context.
 """.strip()
 
 
@@ -248,6 +261,7 @@ def _simulation_report_from_json(
     """Convert Gemini JSON into a SimulationReport with safe defaults."""
     enhanced_context = build_enhanced_judge_context(state)
     risk_scores = enhanced_context["risk_scores"]
+    competitor_analysis = enhanced_context["competitor_analysis"]
     fallback_score = _estimate_conversion_score(state.first_round_responses)
     conversion_score = _safe_score(
         raw_report.get("simulated_conversion_score", raw_report.get("conversion_score")),
@@ -290,6 +304,18 @@ def _simulation_report_from_json(
             raw_report.get("optimization_action_plan"),
             default=enhanced_context["prioritized_action_items"],
         ),
+        price_positioning_verdict=_first_text(
+            raw_report.get("price_positioning_verdict"),
+            competitor_analysis["price_positioning_verdict"],
+        ),
+        competitor_gap_summary=_first_text(
+            raw_report.get("competitor_gap_summary"),
+            competitor_analysis["competitor_gap_summary"],
+        ),
+        required_price_proofs=_short_list(
+            raw_report.get("required_price_proofs"),
+            default=competitor_analysis["required_price_proofs"],
+        ),
         summary=_simulated_summary(
             _first_text(
                 raw_report.get("summary"),
@@ -305,6 +331,7 @@ def _fallback_report(state: SimulationState, error: Exception | None = None) -> 
     responses = state.first_round_responses
     enhanced_context = build_enhanced_judge_context(state)
     risk_scores = enhanced_context["risk_scores"]
+    competitor_analysis = enhanced_context["competitor_analysis"]
     conversion_score = _estimate_conversion_score(responses)
     buyer_loss_reasons = _fallback_loss_reasons(responses)
 
@@ -321,6 +348,9 @@ def _fallback_report(state: SimulationState, error: Exception | None = None) -> 
         clarity_score=risk_scores["clarity_score"],
         return_risk_score=risk_scores["return_risk_score"],
         top_action_items=enhanced_context["prioritized_action_items"],
+        price_positioning_verdict=competitor_analysis["price_positioning_verdict"],
+        competitor_gap_summary=competitor_analysis["competitor_gap_summary"],
+        required_price_proofs=competitor_analysis["required_price_proofs"],
         summary="Simulated conversion score uses fallback buyer-loss analysis.",
     )
 

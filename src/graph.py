@@ -6,12 +6,14 @@ from typing import Any
 
 from src.agents import run_debate_round, run_initial_buyer_round
 from src.judge import run_judge_report
-from src.state import ProductInput, SimulationState, create_empty_state
+from src.price_intelligence import apply_category_persona_weights
+from src.state import CompetitorContext, ProductInput, SimulationState, create_empty_state
 
 
 def run_simulation(product: ProductInput) -> SimulationState:
     """Run the complete buyer simulation engine for one product input."""
     state = create_empty_state(product)
+    state.personas = apply_category_persona_weights(state.personas, product.category)
     state.first_round_responses = run_initial_buyer_round(
         product=state.product,
         personas=state.personas,
@@ -50,6 +52,7 @@ def _coerce_product_input(product: ProductInput | dict[str, Any]) -> ProductInpu
         reviews_or_social_proof=str(product.get("reviews_or_social_proof", "")),
         call_to_action=str(product.get("call_to_action", "")),
         image_notes=product.get("image_notes"),
+        competitor_context=_coerce_competitor_context(product.get("competitor_context")),
     )
 
 
@@ -60,3 +63,29 @@ def _coerce_string_list(value: Any) -> list[str]:
     if isinstance(value, str) and value.strip():
         return [value.strip()]
     return []
+
+
+def _coerce_competitor_context(value: Any) -> CompetitorContext | None:
+    """Normalize optional competitor context dictionaries from sample data."""
+    if isinstance(value, CompetitorContext):
+        return value
+    if not isinstance(value, dict):
+        return None
+
+    return CompetitorContext(
+        competitor_name=str(value.get("competitor_name", "")),
+        competitor_price=_coerce_optional_float(value.get("competitor_price")),
+        competitor_strengths=_coerce_string_list(value.get("competitor_strengths", [])),
+        competitor_weaknesses=_coerce_string_list(value.get("competitor_weaknesses", [])),
+        our_differentiator=str(value.get("our_differentiator", "")),
+    )
+
+
+def _coerce_optional_float(value: Any) -> float | None:
+    """Convert optional numeric fields without turning missing values into zero."""
+    if value in (None, ""):
+        return None
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return None

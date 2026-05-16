@@ -10,6 +10,15 @@ Decision = Literal["buy", "reject", "hesitate"]
 DebateStance = Literal["support", "oppose", "neutral"]
 SectionSentiment = Literal["positive", "neutral", "negative"]
 PriceBand = Literal["budget", "mid_range", "upper_mid", "premium", "irrational"]
+NormalizedCategory = Literal[
+    "electronics_accessory",
+    "fashion_shoes",
+    "small_home_appliance",
+    "handmade_bag",
+    "digital_service",
+    "online_course",
+    "general_product",
+]
 
 
 PAGE_SECTION_NAMES = [
@@ -40,6 +49,44 @@ def _validate_literal(name: str, value: str, allowed_values: set[str]) -> None:
 
 
 @dataclass(slots=True)
+class CategoryProfile:
+    """Business rules for one normalized product category."""
+
+    normalized_category: NormalizedCategory = "general_product"
+    display_name: str = "General product"
+    typical_customer_expectations: list[str] = field(default_factory=list)
+    critical_information_fields: list[str] = field(default_factory=list)
+    default_persona_weights: dict[str, float] = field(default_factory=dict)
+    try_price_bands: tuple[float, float, float, float] = (500, 1_500, 3_500, 8_000)
+
+    def __post_init__(self) -> None:
+        _validate_literal(
+            "normalized_category",
+            self.normalized_category,
+            {
+                "electronics_accessory",
+                "fashion_shoes",
+                "small_home_appliance",
+                "handmade_bag",
+                "digital_service",
+                "online_course",
+                "general_product",
+            },
+        )
+
+
+@dataclass(slots=True)
+class CompetitorContext:
+    """Optional seller-provided competitor context, not live competitor research."""
+
+    competitor_name: str = ""
+    competitor_price: float | None = None
+    competitor_strengths: list[str] = field(default_factory=list)
+    competitor_weaknesses: list[str] = field(default_factory=list)
+    our_differentiator: str = ""
+
+
+@dataclass(slots=True)
 class ProductInput:
     """Product or service page content being tested before launch."""
 
@@ -56,6 +103,7 @@ class ProductInput:
     reviews_or_social_proof: str = ""
     call_to_action: str = ""
     image_notes: str | None = None
+    competitor_context: CompetitorContext | None = None
 
 
 @dataclass(slots=True)
@@ -135,9 +183,9 @@ class PricePerceptionReport:
     """Simulated local pricing assessment for a product, not live market research."""
 
     currency: str = ""
-    category: str = "general_product"
     price: float = 0.0
     local_market: str = "generic"
+    normalized_category: NormalizedCategory = "general_product"
     price_band: PriceBand = "mid_range"
     perceived_value_risk: int = 0
     expected_customer_questions: list[str] = field(default_factory=list)
@@ -146,6 +194,19 @@ class PricePerceptionReport:
     suggested_price_positioning: str = ""
 
     def __post_init__(self) -> None:
+        _validate_literal(
+            "normalized_category",
+            self.normalized_category,
+            {
+                "electronics_accessory",
+                "fashion_shoes",
+                "small_home_appliance",
+                "handmade_bag",
+                "digital_service",
+                "online_course",
+                "general_product",
+            },
+        )
         _validate_literal(
             "price_band",
             self.price_band,
@@ -167,6 +228,9 @@ class SimulationReport:
     clarity_score: int = 0
     return_risk_score: int = 0
     top_action_items: list[str] = field(default_factory=list)
+    price_positioning_verdict: str = ""
+    competitor_gap_summary: str = ""
+    required_price_proofs: list[str] = field(default_factory=list)
     summary: str = ""
 
     def __post_init__(self) -> None:

@@ -18,6 +18,7 @@ from src.optimizer import (
     compare_before_after,
     generate_optimized_product,
 )
+from src.price_intelligence import normalize_currency
 from src.state import (
     AgentResponse,
     AttentionMapReport,
@@ -416,7 +417,12 @@ def _render_sidebar() -> None:
     st.sidebar.text_input(_t("product_title"), key="product_title")
     st.sidebar.text_input(_t("category"), key="product_category")
     st.sidebar.number_input(_t("price"), min_value=0.0, step=1.0, key="product_price")
-    st.sidebar.text_input(_t("currency"), key="product_currency")
+    _normalize_currency_input()
+    st.sidebar.selectbox(
+        _t("currency"),
+        _currency_options(),
+        key="product_currency",
+    )
     st.sidebar.text_input(_t("target_audience"), key="target_audience")
     st.sidebar.text_area(_t("value_proposition"), key="value_proposition", height=90)
     st.sidebar.text_area(_t("product_description"), key="product_description", height=120)
@@ -777,7 +783,7 @@ def _product_from_inputs() -> ProductInput:
         title=st.session_state["product_title"].strip(),
         category=st.session_state["product_category"].strip(),
         price=float(st.session_state["product_price"]),
-        currency=st.session_state["product_currency"].strip() or "USD",
+        currency=normalize_currency(st.session_state["product_currency"]) or "USD",
         description=st.session_state["product_description"].strip(),
         target_audience=st.session_state["target_audience"].strip(),
         value_proposition=st.session_state["value_proposition"].strip(),
@@ -788,6 +794,31 @@ def _product_from_inputs() -> ProductInput:
         call_to_action=st.session_state["call_to_action"].strip(),
         image_notes=st.session_state["image_notes"].strip() or None,
     )
+
+
+def _normalize_currency_input() -> None:
+    """Normalize common currency aliases shown in the sidebar."""
+    raw_currency = st.session_state.get("product_currency", "")
+    if not str(raw_currency).strip():
+        return
+
+    normalized_currency = normalize_currency(raw_currency)
+    if normalized_currency != "UNKNOWN":
+        st.session_state["product_currency"] = normalized_currency
+
+
+def _currency_options() -> list[str]:
+    """Return currency options while preserving an unusual existing currency."""
+    standard_options = ["USD", "TRY", "EUR", "GBP"]
+    current_currency = st.session_state.get("product_currency", "USD")
+    normalized_currency = normalize_currency(current_currency)
+    if normalized_currency in {"", "UNKNOWN"}:
+        normalized_currency = "USD"
+        st.session_state["product_currency"] = normalized_currency
+
+    if normalized_currency not in standard_options:
+        return [normalized_currency, *standard_options]
+    return standard_options
 
 
 def _load_product_into_state(sample: dict[str, Any]) -> None:

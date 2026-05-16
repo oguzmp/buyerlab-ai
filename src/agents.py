@@ -2,11 +2,15 @@
 
 from __future__ import annotations
 
+import json
 from dataclasses import asdict
 from typing import Any
 
 from src.gemini_client import generate_json
-from src.price_intelligence import build_price_context_for_prompt
+from src.price_intelligence import (
+    build_price_context_for_prompt,
+    build_structured_product_brief,
+)
 from src.prompts import (
     BARGAIN_HUNTER_PROMPT,
     IMPULSIVE_BUYER_PROMPT,
@@ -131,7 +135,15 @@ def _format_product_context(product: ProductInput) -> str:
     """Format product input into compact prompt context."""
     data = asdict(product)
     data["trust_signals"] = ", ".join(product.trust_signals) or "Not provided"
-    return "\n".join(f"- {key}: {_display_value(value)}" for key, value in data.items())
+    brief = build_structured_product_brief(product)
+    product_lines = "\n".join(
+        f"- {key}: {_display_value(value)}" for key, value in data.items()
+    )
+    return (
+        f"{product_lines}\n\n"
+        "Structured product brief:\n"
+        f"{json.dumps(brief, ensure_ascii=True)}"
+    )
 
 
 def _format_persona_context(persona: BuyerPersona) -> str:

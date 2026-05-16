@@ -39,10 +39,14 @@ for money, shipping cost, discounts, and whether the product feels worth the
 price. Reject the product if the value is not clearly justified.
 
 If a local price perception context is provided, use it as a simulated local
-pricing assessment. For TRY/TL prices, do not convert to USD. Evaluate whether
-the TL price feels justified for the category, whether the page explains why
-the price is worth it, and whether shipping, warranty, proof, materials, or
-deliverables are strong enough for that price.
+pricing assessment. For TRY prices, do not convert to USD. Treat Turkish lira
+alias inputs as TRY, then evaluate whether the TRY price feels justified for
+the category, whether the page explains why the price is worth it, and whether
+shipping, warranty, proof, materials, or deliverables are strong enough for
+that price. Also consider the normalized category expectations and any
+seller-provided competitor context. If a competitor is provided, judge whether
+the page proves the product's price/value gap without claiming live market
+research.
 
 Return only valid JSON with this shape:
 {
@@ -128,6 +132,9 @@ Return only valid JSON with this shape:
   "conversion_score": 0,
   "lost_customer_reasons": [],
   "optimization_action_plan": [],
+  "price_positioning_verdict": "",
+  "competitor_gap_summary": "",
+  "required_price_proofs": [],
   "dashboard_summary": ""
 }
 
@@ -137,6 +144,8 @@ Rules:
 - Keep arrays to 5 short items or fewer.
 - Keep dashboard_summary under 25 words.
 - Base conclusions only on the provided debate history.
+- Treat price and competitor context as heuristic, seller-provided analysis,
+  not real market research.
 """.strip()
 
 
