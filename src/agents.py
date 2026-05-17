@@ -7,7 +7,10 @@ from dataclasses import asdict
 from typing import Any
 
 from src.gemini_client import generate_json
+from src.category_intelligence import missing_required_information
 from src.price_intelligence import (
+    analyze_competitor_gap,
+    analyze_local_price_perception,
     build_price_context_for_prompt,
     build_structured_product_brief,
 )
@@ -36,6 +39,8 @@ def run_persona_evaluation(product: ProductInput, persona: BuyerPersona) -> Agen
 
     try:
         raw_response = generate_json(prompt)
+        if raw_response.get("mock_mode") is True:
+            return _mock_agent_response(product, persona)
         return _agent_response_from_json(persona, raw_response)
     except Exception as exc:
         return _failed_agent_response(persona, exc)
@@ -216,6 +221,117 @@ def _failed_agent_response(persona: BuyerPersona, exc: Exception) -> AgentRespon
     )
 
 
+def _mock_agent_response(product: ProductInput, persona: BuyerPersona) -> AgentResponse:
+    """Create deterministic, product-aware demo output when mock mode is enabled."""
+    product_name = _product_name(product)
+    missing_fields = missing_required_information(product)
+    price_report = analyze_local_price_perception(product)
+    competitor_gap = analyze_competitor_gap(product)
+    trust_is_weak = not (
+        product.trust_signals
+        and product.warranty_or_return_policy.strip()
+        and (product.proof_assets or product.reviews_or_social_proof.strip())
+    )
+    copy_is_weak = not (
+        product.title.strip()
+        and product.value_proposition.strip()
+        and product.description.strip()
+        and product.call_to_action.strip()
+    )
+
+    if persona.id == "skeptic_buyer":
+        objections = _short_list(missing_fields[:2], product.known_limitations[:2], limit=3)
+        decision = "reject" if missing_fields or product.known_limitations else "hesitate"
+        return AgentResponse(
+            persona_id=persona.id,
+            decision=decision,
+            confidence=84 if decision == "reject" else 66,
+            purchase_intent=24 if decision == "reject" else 48,
+            main_reason=(
+                f"{product_name} lacks category-critical proof: "
+                f"{', '.join(objections[:3]) or 'specific product evidence'}."
+            ),
+            objections=objections or ["Claims need more concrete proof"],
+            missing_information=missing_fields[:3],
+            suggested_fix=_category_fix(product, missing_fields),
+        )
+
+    if persona.id == "bargain_hunter":
+        price_gap = competitor_gap.price_gap
+        competitor_name = _competitor_name(product)
+        price_risk = price_report.perceived_value_risk
+        decision = "reject" if price_report.price_band == "irrational" else "hesitate"
+        if price_risk < 45 and not (price_gap and price_gap > 0):
+            decision = "buy"
+        value_reason = (
+            f"{price_report.price:g} {price_report.currency} needs clearer value proof "
+            f"for the {price_report.price_band} band."
+        )
+        if price_gap and price_gap > 0:
+            value_reason = (
+                f"{product_name} is {price_gap:g} {price_report.currency} above "
+                f"{competitor_name}; the page must prove the difference."
+            )
+        return AgentResponse(
+            persona_id=persona.id,
+            decision=decision,
+            confidence=82 if decision != "buy" else 68,
+            purchase_intent=18 if decision == "reject" else 46 if decision == "hesitate" else 72,
+            main_reason=value_reason,
+            objections=_short_list(
+                price_report.required_value_proofs[:2],
+                competitor_gap.required_proofs_to_win[:2],
+                limit=3,
+            )
+            or ["Price proof is not clear enough"],
+            missing_information=price_report.required_value_proofs[:3],
+            suggested_fix="Defend the price with concrete proof, total cost clarity, and competitor comparison.",
+        )
+
+    if persona.id == "impulsive_buyer":
+        decision = "reject" if copy_is_weak else "hesitate"
+        purchase_intent = 30 if copy_is_weak else 62
+        if not copy_is_weak and product.image_notes and product.call_to_action:
+            decision = "buy"
+            purchase_intent = 74
+        return AgentResponse(
+            persona_id=persona.id,
+            decision=decision,
+            confidence=70,
+            purchase_intent=purchase_intent,
+            main_reason=(
+                f"{product_name} has a clearer emotional hook and CTA."
+                if decision == "buy"
+                else f"{product_name} does not create enough instant desire or visual confidence."
+            ),
+            objections=["Emotional appeal is weak"] if decision != "buy" else [],
+            missing_information=[] if decision == "buy" else ["Stronger visual promise", "Sharper CTA"],
+            suggested_fix="Make the first screen more concrete, visual, and desire-led without exaggerating claims.",
+        )
+
+    decision = "reject" if trust_is_weak else "hesitate"
+    if not trust_is_weak and price_report.perceived_value_risk < 55:
+        decision = "buy"
+    return AgentResponse(
+        persona_id=persona.id,
+        decision=decision,
+        confidence=86 if decision == "reject" else 72,
+        purchase_intent=22 if decision == "reject" else 52 if decision == "hesitate" else 76,
+        main_reason=(
+            f"{product_name} does not yet show enough trust proof, warranty clarity, or social proof."
+            if decision != "buy"
+            else f"{product_name} includes enough trust signals for a first simulated pass."
+        ),
+        objections=["Weak trust proof", "Warranty or return policy needs clarity"]
+        if decision != "buy"
+        else [],
+        missing_information=["Real trust signals", "Warranty and support details"]
+        if decision != "buy"
+        else [],
+        suggested_fix="Add real trust signals, exact warranty/return terms, support details, and proof assets.",
+    )
+
+
 def _build_debate_message(
     product: ProductInput,
     response: AgentResponse,
@@ -282,6 +398,41 @@ def _display_value(value: Any) -> Any:
     if value is None or value == "" or value == []:
         return "Not provided"
     return value
+
+
+def _product_name(product: ProductInput) -> str:
+    """Return a readable product name for dashboard-ready mock output."""
+    identity = " ".join(
+        part
+        for part in [product.brand, product.model]
+        if str(part or "").strip()
+    ).strip()
+    return identity or product.title or product.product_type or "This product"
+
+
+def _competitor_name(product: ProductInput) -> str:
+    """Return a safe competitor label from seller-provided context."""
+    competitor = product.competitor_context
+    if competitor is not None and competitor.competitor_name.strip():
+        return competitor.competitor_name.strip()
+    return "the competitor"
+
+
+def _category_fix(product: ProductInput, missing_fields: list[str]) -> str:
+    """Suggest a concrete category-specific fix for deterministic mock mode."""
+    category = product.normalized_category or product.category
+    missing_text = ", ".join(missing_fields[:4]) or "category-critical details"
+    if "electronics" in category or "earbud" in product.product_type.lower():
+        return "Add battery life, warranty period, compatibility, technical specs, and real microphone or sound proof."
+    if "fashion_shoes" in category or "shoe" in product.product_type.lower():
+        return "Add size guide, fit notes, material details, exchange policy, and real product photos."
+    if "small_home_appliance" in category or "coffee" in product.product_type.lower():
+        return "Add warranty, technical specs, cleaning details, power/capacity info, and service terms."
+    if "digital_service" in category or "service" in product.product_type.lower():
+        return "Add scope, delivery timeline, revision policy, portfolio proof, and support terms."
+    if "online_course" in category or "course" in product.product_type.lower():
+        return "Add instructor proof, curriculum detail, learning outcomes, sample lesson, and refund terms if real."
+    return f"Add clear proof for: {missing_text}."
 
 
 def _purchase_intent_from_decision(decision: str) -> int:

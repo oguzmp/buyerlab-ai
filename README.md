@@ -128,12 +128,11 @@ streamlit run app.py
 
 ## Demo Scenario
 
-Recommended demo products:
+Recommended primary demo:
 
-- Wireless headphones
-- Running shoes
+- Wireless Earbuds Demo
 
-These products work well because buyers naturally care about price, trust, proof, shipping, return policy, emotional appeal, and product details.
+This demo works well because it shows a brand/model-level product audit, heuristic local TRY price perception, a competitor price gap, missing technical proof, trust risk, and before-after improvement.
 
 ## Hackathon Submission Notes
 

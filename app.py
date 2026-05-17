@@ -510,7 +510,7 @@ def _render_sidebar() -> None:
     _render_content_inputs()
 
     st.sidebar.divider()
-    run_clicked = st.sidebar.button(_t("run"), type="primary", use_container_width=True)
+    run_clicked = st.sidebar.button(_t("run"), type="primary", width="stretch")
     if run_clicked:
         product = _product_from_inputs()
         if not product.title:
@@ -536,7 +536,7 @@ def _render_sample_loader() -> None:
         key="selected_sample",
     )
 
-    if st.sidebar.button(_t("load_sample"), use_container_width=True):
+    if st.sidebar.button(_t("load_sample"), width="stretch"):
         sample = samples[sample_names.index(selected_sample)]
         _load_product_into_state(sample)
         st.session_state["last_error"] = ""
@@ -788,7 +788,7 @@ def _render_buyer_loss_analysis(buyer_loss_analysis: list[dict[str, Any]]) -> No
         }
         for row in buyer_loss_analysis
     ]
-    st.dataframe(rows, use_container_width=True, hide_index=True)
+    st.dataframe(rows, width="stretch", hide_index=True)
 
 
 def _render_debate_terminal(state: SimulationState) -> None:
@@ -878,7 +878,7 @@ def _render_category_audit(state: SimulationState) -> None:
             }
         )
 
-    st.dataframe(rows, use_container_width=True, hide_index=True)
+    st.dataframe(rows, width="stretch", hide_index=True)
     missing_rows = [
         row
         for row in rows_source
@@ -910,7 +910,7 @@ def _render_attention_map(attention_map: AttentionMapReport) -> None:
                 _t("suggested_fix"): score.suggested_fix,
             }
         )
-    st.dataframe(rows, use_container_width=True, hide_index=True)
+    st.dataframe(rows, width="stretch", hide_index=True)
 
     cols = st.columns(3)
     cols[0].metric(_t("strongest"), _section_name(attention_map.strongest_section))

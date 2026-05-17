@@ -207,6 +207,8 @@ def calculate_launch_readiness_score(
         - persona_penalty
         + clarity_bonus
     )
+    if simulated_conversion_score >= 40:
+        score = max(score, min(35, round(simulated_conversion_score * 0.35)))
     return _safe_score(score)
 
 

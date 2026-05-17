@@ -135,6 +135,14 @@ def test_sample_simulation_runs_in_mock_mode():
     assert result.product.title == product["title"]
     assert len(result.first_round_responses) == 4
     assert len(result.debate_history) == 4
+    assert all(
+        "Deterministic mock response" not in response.main_reason
+        for response in result.first_round_responses
+    )
+    assert any(
+        "TuneGo Lite Pro" in response.main_reason
+        for response in result.first_round_responses
+    )
     assert result.final_report is not None
     assert 0 <= result.final_report.simulated_conversion_score <= 100
 
@@ -178,6 +186,23 @@ def test_try_price_perception_uses_local_heuristics_without_conversion():
     assert any("TRY price" in question for question in report.expected_customer_questions)
     assert "TL price" not in prompt_context
     assert "not live market research" in prompt_context
+
+
+def test_try_price_perception_recognizes_turkiye_local_market():
+    product = ProductInput(
+        title="SoundPeak AirBass X2",
+        category="Electronics accessory",
+        normalized_category="electronics_accessory",
+        local_market="Türkiye",
+        price=799,
+        currency="TRY",
+        description="Wireless earbuds with claimed microphone quality.",
+    )
+
+    report = analyze_local_price_perception(product)
+
+    assert report.local_market == "Türkiye"
+    assert "Turkish local price perception heuristics" in report.pricing_comment
 
 
 def test_product_identity_and_competitor_context_feed_business_brief():
