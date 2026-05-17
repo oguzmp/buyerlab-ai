@@ -4,6 +4,8 @@ Test your product with AI buyers before launch.
 
 BuyerLab AI is a pre-launch e-commerce testing dashboard that simulates multiple AI buyer personas reviewing a product page before it goes live.
 
+BuyerLab AI uses a Turkish-first interface because it is prepared for a Turkish hackathon, while keeping key AI/SaaS terms in English for technical clarity.
+
 ## Problem
 
 E-commerce sellers often find out that a product page is weak only after spending money on ads, running a failed launch, or receiving avoidable customer returns. Missing product details, weak trust signals, unclear value, or confusing shipping and return policies can quietly reduce buyer confidence.

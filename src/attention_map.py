@@ -90,6 +90,7 @@ Return only valid JSON with this exact shape:
 }}
 
 Rules:
+- Write reason and suggested_fix in Turkish for Turkish e-commerce sellers.
 - Include exactly one score for each section in sections_to_score.
 - Scores must be integers from 0 to 100.
 - Use sentiment values: positive, neutral, or negative.

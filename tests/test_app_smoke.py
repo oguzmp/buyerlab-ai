@@ -16,13 +16,13 @@ def test_streamlit_sample_loader_populates_product_brief(monkeypatch):
 
     app = AppTest.from_file("app.py")
     app.run(timeout=10)
-    _button(app, "Load sample").click().run(timeout=10)
+    _button(app, "Örneği yükle").click().run(timeout=10)
 
     assert not app.exception
-    assert _value(app.text_input, "Brand") == "SoundPeak"
+    assert _value(app.text_input, "Marka") == "SoundPeak"
     assert _value(app.text_input, "Model") == "AirBass X2"
-    assert _value(app.number_input, "Price") == 799.0
-    assert _value(app.text_input, "Competitor name") == "TuneGo Lite Pro"
+    assert _value(app.number_input, "Fiyat") == 799.0
+    assert _value(app.text_input, "Rakip adı") == "TuneGo Lite Pro"
 
 
 def test_streamlit_mock_audit_renders_core_dashboard(monkeypatch):
@@ -30,20 +30,20 @@ def test_streamlit_mock_audit_renders_core_dashboard(monkeypatch):
 
     app = AppTest.from_file("app.py")
     app.run(timeout=10)
-    _button(app, "Load sample").click().run(timeout=10)
-    _button(app, "Run Pre-launch Audit").click().run(timeout=30)
+    _button(app, "Örneği yükle").click().run(timeout=10)
+    _button(app, "Yayın Öncesi Denetimi Çalıştır").click().run(timeout=30)
 
     assert not app.exception
     assert [tab.label for tab in app.tabs] == [
-        "Launch Readiness",
-        "Buyer Personas",
-        "Market Context",
-        "Category Audit",
-        "Conversion Friction Map",
-        "Fix Pack",
-        "Before / After",
+        "Yayına Hazırlık",
+        "AI Müşteri Profilleri",
+        "Pazar Bağlamı",
+        "Kategori Denetimi",
+        "Dönüşüm Sürtünme Haritası",
+        "Düzeltme Paketi",
+        "Önce / Sonra",
     ]
     metric_labels = {metric.label for metric in app.metric}
-    assert "Launch readiness score" in metric_labels
-    assert "Launch status" in metric_labels
-    assert "Simulated conversion score" in metric_labels
+    assert "Yayına Hazırlık Skoru" in metric_labels
+    assert "Yayın Durumu" in metric_labels
+    assert "Simüle Dönüşüm Skoru" in metric_labels

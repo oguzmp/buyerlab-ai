@@ -121,6 +121,10 @@ Product page context:
 {product_context}
 {price_context}
 
+Output language:
+- Write all user-facing JSON string values in Turkish.
+- Keep schema keys and enum values exactly as requested.
+
 Return only valid JSON for this exact engine schema:
 {{
   "decision": "buy | reject | hesitate",

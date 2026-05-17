@@ -288,6 +288,7 @@ Return only valid JSON for this exact report schema:
 }}
 
 Rules:
+- Write user-facing report text in Turkish for Turkish e-commerce sellers.
 - Use the phrase "simulated conversion score" in the summary.
 - Do not claim the score is a real market prediction.
 - Keep all arrays to 5 short dashboard-ready items or fewer.

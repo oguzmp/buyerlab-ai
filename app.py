@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 from pathlib import Path
 from typing import Any
 
@@ -37,7 +38,7 @@ from src.state import (
 
 DATA_PATH = Path(__file__).parent / "data" / "sample_products.json"
 
-LANGUAGE_OPTIONS = {"English": "en", "Türkçe": "tr"}
+LANGUAGE_OPTIONS = {"Türkçe": "tr", "English": "en"}
 
 CATEGORY_OPTIONS = [
     "electronics_accessory",
@@ -57,6 +58,7 @@ UI_TEXT = {
         "language": "Language / Dil",
         "app_eyebrow": "Product Launch Audit Dashboard",
         "tagline": "Test your product with AI buyers before launch.",
+        "tagline_support": "",
         "hero_copy": (
             "BuyerLab AI audits product pages before launch using AI buyer "
             "personas, category standards, local price perception, and "
@@ -181,144 +183,172 @@ UI_TEXT = {
         "running": "Running pre-launch audit...",
         "simulation_failed": "Simulation failed safely:",
         "score_unavailable": "Simulated conversion score unavailable.",
+        "badge_audit": "pre-launch audit",
+        "badge_readiness": "launch readiness",
+        "badge_price": "heuristic local price perception",
+        "buyer_loss_summary": "Buyer Loss Summary",
+        "launch_decision_summary": "Launch Decision Summary",
+        "price_justification_verdict": "Price Justification Verdict",
+        "competitor_gap_verdict": "Competitor Gap Verdict",
+        "competitor_positioning": "Competitor positioning",
+        "trust_proof_checklist": "Trust Proof Checklist",
+        "competitor_comparison": "Competitor Comparison Suggestion",
+        "missing_information_checklist": "Missing Information Checklist",
+        "no_items": "No items provided.",
+        "not_provided": "Not provided.",
     },
     "tr": {
         "language": "Language / Dil",
-        "app_eyebrow": "Product Launch Audit Dashboard",
-        "tagline": "Urununu lansmandan once AI alicilarla test et.",
+        "app_eyebrow": "Ürün Yayın Öncesi Denetim Paneli",
+        "tagline": "Ürününü yayına almadan önce AI müşterilerle test et.",
+        "tagline_support": "Test your product with AI buyers before launch.",
         "hero_copy": (
-            "BuyerLab AI, urun sayfalarini lansman oncesinde AI alici "
-            "personalari, kategori standartlari, yerel fiyat algisi ve rakip "
-            "baglami ile denetler."
+            "BuyerLab AI, ürün sayfalarını yayına çıkmadan önce yapay zeka "
+            "müşteri profilleriyle denetler. Sistem; müşteri itirazlarını, "
+            "güven eksiklerini, fiyat sürtünmesini, rakip farkını ve yayına "
+            "çıkmadan önce düzeltilmesi gereken noktaları raporlar."
         ),
-        "hero_disclaimer": "Scores are AI-simulated diagnostics, not real market predictions.",
-        "brief_wizard": "Urun Brief Sihirbazi",
-        "brief_help": "Simule alici degerlendirmesi icin yapilandirilmis urun brief'i hazirla.",
-        "sample_loader": "Hizli Demo Ornekleri",
-        "sample_help": "Gercekci bir demo vakasi yukle, sonra brief'i duzenle.",
-        "sample_product": "Ornek urun",
-        "load_sample": "Ornegi yukle",
-        "identity": "A) Urun Kimligi",
-        "pricing": "B) Fiyat ve Pazar Baglami",
-        "trust": "C) Kanit ve Guven",
-        "content": "D) Urun Sayfasi Icerigi",
+        "hero_disclaimer": "Bu skorlar AI destekli simülasyon çıktılarıdır; gerçek pazar tahmini veya gerçek A/B test sonucu değildir.",
+        "brief_wizard": "Ürün Brief Sihirbazı",
+        "brief_help": "Yayına çıkmadan önce denetlenecek ürün sayfası brief'ini hazırla.",
+        "sample_loader": "Hızlı Demo Örnekleri",
+        "sample_help": "Gerçekçi bir demo vakası yükle, sonra brief'i düzenle.",
+        "sample_product": "Örnek ürün",
+        "load_sample": "Örneği yükle",
+        "identity": "A) Ürün Kimliği",
+        "pricing": "B) Fiyat ve Pazar Bağlamı",
+        "trust": "C) Güven ve Kanıtlar",
+        "content": "D) Ürün Sayfası İçeriği",
         "brand": "Marka",
         "model": "Model",
-        "product_type": "Urun tipi",
+        "product_type": "Ürün tipi",
         "category": "Kategori",
         "market_segment": "Pazar segmenti",
-        "intended_use_case": "Kullanim senaryosu",
+        "intended_use_case": "Kullanım amacı",
         "price": "Fiyat",
         "currency": "Para birimi",
         "local_market": "Yerel pazar",
-        "competitor_name": "Rakip adi",
-        "competitor_price": "Rakip fiyati",
-        "competitor_strengths": "Rakip guclu yonleri",
-        "competitor_weaknesses": "Rakip zayif yonleri",
-        "our_differentiator": "Bizim farkimiz",
+        "competitor_name": "Rakip adı",
+        "competitor_price": "Rakip fiyatı",
+        "competitor_strengths": "Rakibin güçlü yönleri",
+        "competitor_weaknesses": "Rakibin zayıf yönleri",
+        "our_differentiator": "Bizim farkımız",
         "warranty": "Garanti / iade politikasi",
         "shipping": "Kargo bilgisi",
-        "trust_signals": "Guven sinyalleri",
-        "proof_assets": "Kanit varliklari",
+        "trust_signals": "Güven sinyalleri",
+        "proof_assets": "Kanıt varlıkları",
         "known_limitations": "Bilinen eksikler",
-        "product_title": "Urun basligi",
-        "value_proposition": "Deger onerisi",
-        "product_description": "Urun aciklamasi",
-        "social_proof": "Yorumlar veya sosyal kanit",
-        "cta": "Eylem cagrisi",
-        "image_notes": "Gorsel notlari",
-        "run": "Lansman Audit'ini Calistir",
-        "missing_title": "Lansman audit'i icin once urun basligi ekle.",
-        "mock_on": "Mock mode active",
+        "product_title": "Ürün başlığı",
+        "value_proposition": "Değer önerisi",
+        "product_description": "Ürün açıklaması",
+        "social_proof": "Yorumlar veya sosyal kanıt",
+        "cta": "Satın alma çağrısı",
+        "image_notes": "Görsel notları",
+        "run": "Yayın Öncesi Denetimi Çalıştır",
+        "missing_title": "Denetimi çalıştırmadan önce ürün başlığı ekle.",
+        "mock_on": "Mock mod aktif",
         "missing_key": (
-            "Gemini bagli degil. GEMINI_API_KEY ekle veya demo icin "
+            "Gemini bağlı değil. GEMINI_API_KEY ekle veya demo için "
             "BUYERLAB_MOCK_MODE=true kullan."
         ),
-        "key_detected": "Gemini bagli",
-        "empty_title": "Urun brief'ini hazirla, sonra audit'i calistir",
+        "key_detected": "Gemini bağlı",
+        "empty_title": "Ürün brief'ini hazırla, sonra denetimi çalıştır",
         "empty_copy": (
-            "Rapor; launch readiness, alici persona tepkileri, heuristic local "
-            "price perception, conversion friction ve pratik fix pack gosterecek."
+            "Rapor; yayına hazırlık, AI müşteri profilleri, yerel TL fiyat algısı, "
+            "dönüşüm sürtünmesi ve pratik düzeltme paketini gösterecek."
         ),
-        "tab_launch": "Launch Readiness",
-        "tab_personas": "Alici Personalar",
-        "tab_market": "Pazar Baglami",
-        "tab_category": "Category Audit",
-        "tab_friction": "Conversion Friction Map",
-        "tab_fix": "Fix Pack",
-        "tab_compare": "Once / Sonra",
-        "launch_score": "Launch readiness skoru",
-        "launch_status": "Launch status",
-        "simulated_score": "Simulated conversion score",
+        "tab_launch": "Yayına Hazırlık",
+        "tab_personas": "AI Müşteri Profilleri",
+        "tab_market": "Pazar Bağlamı",
+        "tab_category": "Kategori Denetimi",
+        "tab_friction": "Dönüşüm Sürtünme Haritası",
+        "tab_fix": "Düzeltme Paketi",
+        "tab_compare": "Önce / Sonra",
+        "launch_score": "Yayına Hazırlık Skoru",
+        "launch_status": "Yayın Durumu",
+        "simulated_score": "Simüle Dönüşüm Skoru",
         "main_blocker": "Ana engel",
-        "executive_verdict": "Yonetici ozeti",
-        "next_actions": "Siradaki en iyi aksiyonlar",
-        "required_fixes": "Launch oncesi zorunlu fix'ler",
-        "judge_missing": "Judge raporu henuz yok.",
+        "executive_verdict": "Yönetici özeti",
+        "next_actions": "Sonraki en iyi aksiyonlar",
+        "required_fixes": "Yayına Çıkmadan Önce Gerekli Düzeltmeler",
+        "judge_missing": "Judge raporu henüz yok.",
         "decision": "Karar",
-        "intent": "satin alma niyeti",
-        "confidence": "guven",
+        "intent": "satın alma niyeti",
+        "confidence": "güven",
         "top_objection": "Ana itiraz",
-        "suggested_fix": "Onerilen fix",
-        "no_objection": "Buyuk itiraz yok.",
-        "waiting": "Alici degerlendirmesi bekleniyor.",
-        "terminal": "Live Debate / Market Terminal",
-        "no_debate": "Henuz tartisma yok.",
-        "buyer_loss": "Buyer Loss Reasons",
-        "market_note": "Heuristic local price perception; canli pazar arastirmasi degildir.",
-        "price_band": "Fiyat bandi",
-        "value_risk": "Algilanan deger riski",
-        "required_value_proofs": "Gerekli deger kanitlari",
+        "suggested_fix": "Önerilen düzeltme",
+        "no_objection": "Büyük itiraz yok.",
+        "waiting": "Müşteri değerlendirmesi bekleniyor.",
+        "terminal": "Canlı Tartışma / Market Terminal",
+        "no_debate": "Henüz tartışma yok.",
+        "buyer_loss": "Kaybedilen Müşteri Nedenleri",
+        "market_note": "TL fiyat algısı, kategori bazlı sezgisel değerlendirme kullanır; döviz çevirisi veya canlı fiyat araştırması yapmaz.",
+        "price_band": "Fiyat bandı",
+        "value_risk": "Algılanan değer riski",
+        "required_value_proofs": "Gerekli değer kanıtları",
         "pricing_comment": "Fiyat yorumu",
-        "price_positioning": "Onerilen fiyat konumlandirmasi",
-        "competitor_gap": "Rakip gap ozeti",
-        "proofs_to_win": "Rakibe karsi kazanmak icin kanitlar",
-        "expected_questions": "Beklenen musteri sorulari",
-        "no_competitor": "Rakip baglami girilmedi.",
-        "category_audit_note": "Kategori kontrolleri pre-launch audit icin heuristic kategori profillerini kullanir.",
-        "required_field": "Gerekli bilgi alani",
+        "price_positioning": "Önerilen fiyat konumlandırması",
+        "competitor_gap": "Rakip Farkı Analizi",
+        "proofs_to_win": "Rakibe karşı kazanmak için gerekli kanıtlar",
+        "expected_questions": "Beklenen müşteri soruları",
+        "no_competitor": "Rakip bağlamı girilmedi. Rakip analizi, kullanıcının girdiği rakip bilgilerine göre yapılır; gerçek zamanlı pazar verisi çekilmez.",
+        "category_audit_note": "Kategori denetimi, sezgisel kategori profillerine göre yapılan AI destekli tanı kontrolüdür.",
+        "required_field": "Gerekli bilgi alanı",
         "status": "Durum",
         "impact": "Etki",
-        "explanation": "Aciklama",
+        "explanation": "Açıklama",
         "business_impact": "Business impact",
-        "attention_caption": "This is AI-simulated buyer attention, not real eye-tracking.",
-        "section": "Bolum",
+        "attention_caption": "Bu analiz gerçek göz takibi değildir. AI müşteri profillerine göre simüle edilmiş dikkat ve sürtünme analizidir.",
+        "section": "Bölüm",
         "attention": "Dikkat",
-        "friction": "Surtunme",
-        "priority": "Oncelik",
+        "friction": "Sürtünme",
+        "priority": "Öncelik",
         "sentiment": "Duygu",
         "reason": "Neden",
-        "strongest": "En guclu bolum",
-        "weakest": "En zayif bolum",
-        "highest_friction": "En yuksek surtunme",
-        "optimized_title": "Yeniden yazilan urun basligi",
-        "optimized_description": "Iyilestirilmis aciklama",
-        "improved_value": "Iyilestirilmis deger onerisi",
-        "warranty_improvement": "Garanti / iade iyilestirme onerisi",
-        "shipping_improvement": "Kargo iyilestirme onerisi",
-        "improved_trust": "Guven sinyali onerileri",
-        "faq": "SSS onerileri",
-        "cta_suggestion": "CTA onerisi",
-        "change_summary": "Degisiklik ozeti",
-        "before_score": "Once simulated conversion score",
-        "after_score": "Sonra simulated conversion score",
-        "score_delta": "Skor farki",
-        "improved_sections": "Iyilesen bolumler",
+        "strongest": "En güçlü bölüm",
+        "weakest": "En zayıf bölüm",
+        "highest_friction": "En yüksek sürtünme",
+        "optimized_title": "Yeniden yazılan ürün başlığı",
+        "optimized_description": "İyileştirilmiş açıklama",
+        "improved_value": "İyileştirilmiş değer önerisi",
+        "warranty_improvement": "Garanti / iade iyileştirme önerisi",
+        "shipping_improvement": "Kargo iyileştirme önerisi",
+        "improved_trust": "Güven sinyali önerileri",
+        "faq": "SSS önerileri",
+        "cta_suggestion": "CTA önerisi",
+        "change_summary": "Değişiklik özeti",
+        "before_score": "Önceki Simüle Dönüşüm Skoru",
+        "after_score": "Sonraki Simüle Dönüşüm Skoru",
+        "score_delta": "Skor farkı",
+        "improved_sections": "İyileşen bölümler",
         "remaining_risks": "Kalan riskler",
-        "no_section_lift": "Henuz bolum iyilesmesi yok",
-        "score_caption": "Skorlar simule alici test sinyalleridir; gercek pazar tahmini degildir.",
-        "running": "Pre-launch audit calisiyor...",
-        "simulation_failed": "Simulasyon guvenli sekilde durdu:",
-        "score_unavailable": "Simulated conversion score kullanilamiyor.",
+        "no_section_lift": "Henüz bölüm iyileşmesi yok",
+        "score_caption": "Bu skor gerçek satış oranı tahmini değildir. Yayın öncesi ürün sayfası zayıflıklarını bulmak için kullanılan AI destekli tanı skorudur.",
+        "running": "Yayın öncesi denetim çalışıyor...",
+        "simulation_failed": "Simülasyon güvenli şekilde durdu:",
+        "score_unavailable": "Simüle dönüşüm skoru kullanılamıyor.",
+        "badge_audit": "yayın öncesi denetim",
+        "badge_readiness": "yayına hazırlık",
+        "badge_price": "yerel TL fiyat algısı",
+        "buyer_loss_summary": "Kaybedilen Müşteri Özeti",
+        "launch_decision_summary": "Yayın Kararı Özeti",
+        "price_justification_verdict": "Fiyat Gerekçesi Kararı",
+        "competitor_gap_verdict": "Rakip Farkı Kararı",
+        "competitor_positioning": "Rakibe göre konumlandırma",
+        "trust_proof_checklist": "Güven Kanıtı Kontrol Listesi",
+        "competitor_comparison": "Rakip Karşılaştırma Önerisi",
+        "missing_information_checklist": "Eksik Bilgi Kontrol Listesi",
+        "no_items": "Öğe girilmedi.",
+        "not_provided": "Bilgi girilmedi.",
     },
 }
 
 PERSONA_NAMES = {
     "tr": {
-        "Skeptic Buyer": "Supheci Alici",
-        "Bargain Hunter": "Firsat Avcisi",
-        "Impulsive Buyer": "Durtusel Alici",
-        "Trust Seeker": "Guven Arayan",
+        "Skeptic Buyer": "Şüpheci Müşteri / Skeptic Buyer",
+        "Bargain Hunter": "Fiyat Odaklı Müşteri / Bargain Hunter",
+        "Impulsive Buyer": "Dürtüsel Müşteri / Impulsive Buyer",
+        "Trust Seeker": "Güven Arayan Müşteri / Trust Seeker",
     }
 }
 
@@ -334,29 +364,29 @@ LABELS = {
         "irrational": "Irrational",
     },
     "tr": {
-        "buy": "satin alir",
+        "buy": "satın alır",
         "reject": "reddeder",
-        "hesitate": "kararsiz",
+        "hesitate": "kararsız",
         "support": "destekliyor",
-        "oppose": "karsi",
-        "neutral": "notr",
-        "high": "yuksek",
+        "oppose": "karşı",
+        "neutral": "nötr",
+        "high": "yüksek",
         "medium": "orta",
-        "low": "dusuk",
+        "low": "düşük",
         "positive": "olumlu",
         "negative": "olumsuz",
-        "ready": "Hazir",
-        "needs_fixes": "Fix Gerekli",
-        "not_ready": "Hazir Degil",
-        "budget": "Budget",
-        "mid_range": "Mid-range",
-        "upper_mid": "Upper-mid",
+        "ready": "Hazır",
+        "needs_fixes": "Düzeltme Gerekli",
+        "not_ready": "Hazır Değil",
+        "budget": "Ekonomik",
+        "mid_range": "Orta segment",
+        "upper_mid": "Üst orta",
         "premium": "Premium",
-        "irrational": "Mantiksiz Yuksek",
-        "strong_conversion_area": "guclu donusum alani",
-        "critical_fix_area": "kritik fix alani",
-        "hidden_risk_area": "gizli risk alani",
-        "low_priority_area": "dusuk oncelik",
+        "irrational": "Mantıksız yüksek",
+        "strong_conversion_area": "güçlü dönüşüm alanı",
+        "critical_fix_area": "kritik düzeltme alanı",
+        "hidden_risk_area": "gizli risk alanı",
+        "low_priority_area": "düşük öncelik",
     },
 }
 
@@ -372,12 +402,12 @@ CATEGORY_LABELS = {
     },
     "tr": {
         "electronics_accessory": "Elektronik / Aksesuar",
-        "fashion_shoes": "Moda / Ayakkabi",
-        "small_home_appliance": "Kucuk Ev Aleti",
-        "handmade_bag": "El Yapimi Canta",
-        "digital_service": "Dijital Servis",
+        "fashion_shoes": "Moda / Ayakkabı",
+        "small_home_appliance": "Küçük Ev Aleti",
+        "handmade_bag": "El Yapımı Çanta",
+        "digital_service": "Dijital Hizmet",
         "online_course": "Online Kurs",
-        "general_product": "Genel Urun",
+        "general_product": "Genel Ürün",
     },
 }
 
@@ -395,15 +425,15 @@ SECTION_LABELS = {
         "call_to_action": "Call to action",
     },
     "tr": {
-        "title": "Baslik",
+        "title": "Başlık",
         "price": "Fiyat",
-        "hero_image": "Hero gorseli",
-        "description": "Aciklama",
-        "value_proposition": "Deger onerisi",
+        "hero_image": "Hero görseli",
+        "description": "Açıklama",
+        "value_proposition": "Değer önerisi",
         "warranty_or_return_policy": "Garanti / iade",
         "shipping_info": "Kargo bilgisi",
-        "trust_signals": "Guven sinyalleri",
-        "reviews_or_social_proof": "Yorumlar / sosyal kanit",
+        "trust_signals": "Güven sinyalleri",
+        "reviews_or_social_proof": "Yorumlar / sosyal kanıt",
         "call_to_action": "CTA",
     },
 }
@@ -441,7 +471,7 @@ def load_sample_products() -> list[dict[str, Any]]:
 
 def _language_code() -> str:
     """Return the active UI language code."""
-    return LANGUAGE_OPTIONS.get(st.session_state.get("language", "English"), "en")
+    return LANGUAGE_OPTIONS.get(st.session_state.get("language", "Türkçe"), "tr")
 
 
 def _t(key: str) -> str:
@@ -485,12 +515,103 @@ def _display_label(value: Any) -> str:
     return _persona_name(_localized_label(value))
 
 
+REPORT_TRANSLATIONS = {
+    "This product page is not ready to launch.": "Bu ürün sayfası şu haliyle yayına hazır değil.",
+    "This product page needs fixes before launch.": "Bu ürün sayfasının yayına çıkmadan önce düzeltilmesi gerekiyor.",
+    "This product page is ready to launch in the simulated buyer assessment.": "Simüle müşteri değerlendirmesine göre bu ürün sayfası yayına çıkabilir.",
+    "Main blocker:": "Ana engel:",
+    "Business impact:": "İş etkisi:",
+    "Recommendation:": "Öneri:",
+    "Do not launch yet;": "Henüz yayına alma;",
+    "Launch only after this fix is completed:": "Yalnızca bu düzeltme tamamlandıktan sonra yayına al:",
+    "Launch can proceed, but keep monitoring real buyer behavior.": "Yayına çıkılabilir; ancak gerçek müşteri davranışı ayrıca takip edilmelidir.",
+    "Trust proof is weak": "Güven kanıtları zayıf",
+    "buyers need real proof assets, warranty clarity, and visible support.": "müşterilerin gerçek kanıtlara, net garanti bilgisine ve görünür desteğe ihtiyacı var.",
+    "Missing category-critical information": "Kategori için kritik bilgiler eksik",
+    "Price/value justification is weak for the heuristic local price perception band.": "Sezgisel yerel fiyat algısı bandına göre fiyat/değer gerekçesi zayıf.",
+    "Competitor gap is not justified with proof or a clear comparison.": "Rakip farkı kanıt veya net karşılaştırma ile açıklanmamış.",
+    "Return, warranty, shipping, or delivery terms do not reduce buyer risk enough.": "İade, garanti, kargo veya teslimat bilgileri müşteri riskini yeterince azaltmıyor.",
+    "Product value and key claims are not clear enough for a fast launch decision.": "Ürün değeri ve ana iddialar hızlı bir yayın kararı için yeterince net değil.",
+    "Emotional appeal or CTA strength is not compelling enough to create urgency.": "Duygusal çekicilik veya CTA gücü aciliyet yaratmak için yeterli değil.",
+    "BuyerLab lost the": "BuyerLab şu müşteri profillerini kaybetti:",
+    "persona(s). This creates business risk because buyers are likely to hesitate over:": "Bu iş riski yaratır çünkü müşteriler şu konularda tereddüt edebilir:",
+    "Decision: Do not launch yet.": "Karar: Henüz yayına alma.",
+    "Decision: Launch is possible only after required fixes before launch are completed.": "Karar: Yayına çıkmak ancak gerekli düzeltmeler tamamlandıktan sonra mümkün.",
+    "Decision: Launch is possible.": "Karar: Yayına çıkmak mümkün.",
+    "Fix trust proof, price justification, and category-critical details first.": "Önce güven kanıtları, fiyat gerekçesi ve kategori-kritik detaylar düzeltilmeli.",
+    "Start with:": "İlk adım:",
+    "Add real trust signals": "Gerçek güven sinyalleri ekle",
+    "exact warranty duration": "net garanti süresi",
+    "return conditions": "iade koşulları",
+    "support contact": "destek iletişimi",
+    "proof assets": "kanıt varlıkları",
+    "visible purchase safety": "görünür satın alma güvenliği",
+    "Add exact battery life": "Net batarya süresi ekle",
+    "warranty period": "garanti süresi",
+    "Bluetooth/version compatibility": "Bluetooth/sürüm uyumluluğu",
+    "technical specs": "teknik özellikler",
+    "return policy": "iade politikası",
+    "real usage proof": "gerçek kullanım kanıtı",
+    "microphone or sound quality proof": "mikrofon veya ses kalitesi kanıtı",
+    "Explain why this product is worth": "Bu ürünün neden",
+    "more than": "daha fazla etmeye değer olduğunu açıkla:",
+    "Add a short comparison table against the alternative product.": "Alternatif ürüne karşı kısa bir karşılaştırma tablosu ekle.",
+    "Collect real proof assets and place them near price and CTA.": "Gerçek kanıtları topla ve fiyat ile CTA yakınına yerleştir.",
+    "Complete the category-critical product information.": "Kategori için kritik ürün bilgilerini tamamla.",
+    "Rewrite price justification with concrete value proof.": "Fiyat gerekçesini somut değer kanıtlarıyla yeniden yaz.",
+    "Add a short competitor comparison using seller-provided facts.": "Satıcının verdiği bilgilerle kısa rakip karşılaştırması ekle.",
+    "Make shipping, warranty, and return terms visible.": "Kargo, garanti ve iade koşullarını görünür yap.",
+    "Simulated conversion score": "Simüle dönüşüm skoru",
+    "simulated conversion score": "simüle dönüşüm skoru",
+    "not a real market prediction": "gerçek pazar tahmini değildir",
+    "AI-assisted diagnostic score": "AI destekli tanı skoru",
+    "AI-simulated buyer attention": "AI destekli müşteri dikkat analizi",
+    "conversion friction": "dönüşüm sürtünmesi",
+    "section lacks enough page content for simulated buyers.": "bölümünde simüle müşteriler için yeterli sayfa içeriği yok.",
+    "Buyer feedback points to friction around": "Müşteri geri bildirimi şu bölümde sürtünmeye işaret ediyor:",
+    "has limited simulated friction.": "sınırlı simüle sürtünme gösteriyor.",
+    "Add clear": "Net bilgi ekle:",
+    "content before launch.": "içeriği yayından önce tamamlanmalı.",
+    "Reduce buyer uncertainty in": "Müşteri belirsizliğini azalt:",
+    "Keep": "Koru:",
+    "concise and easy to scan.": "kısa ve hızlı taranabilir olsun.",
+    "No major remaining risk identified.": "Belirgin kalan risk tespit edilmedi.",
+    "Highest simulated friction remains in": "En yüksek simüle sürtünme şu bölümde kalıyor:",
+    "Simulated conversion score improved after optimization; rerun with real page constraints before launch.": "Optimizasyon sonrası simüle dönüşüm skoru arttı; yayına çıkmadan önce gerçek sayfa koşullarıyla tekrar test et.",
+    "Simulated conversion score was unchanged; focus on remaining buyer risks before another test.": "Simüle dönüşüm skoru değişmedi; yeni testten önce kalan müşteri risklerine odaklan.",
+}
+
+
+def _report_text(value: Any) -> str:
+    """Localize generated dashboard text lightly without changing backend data."""
+    text = " ".join(str(value or "").split())
+    if _language_code() != "tr" or not text:
+        return text
+
+    text = _translate_price_gap(text)
+    for english, turkish in sorted(REPORT_TRANSLATIONS.items(), key=lambda item: len(item[0]), reverse=True):
+        text = text.replace(english, turkish)
+    return text
+
+
+def _translate_price_gap(text: str) -> str:
+    """Translate the most common competitor price-gap sentence shape."""
+    pattern = r"(?P<product>.+?) is (?P<gap>[0-9.]+) (?P<currency>[A-Z]+) above (?P<competitor>.+?); the page must prove the difference\."
+    match = re.match(pattern, text)
+    if not match:
+        return text
+    return (
+        f"{match.group('product')}, {match.group('competitor')} ürününden "
+        f"{match.group('gap')} {match.group('currency')} daha pahalı; sayfa bu farkı kanıtlamalı."
+    )
+
+
 def _render_sidebar() -> None:
     """Render the product brief wizard and simulation action."""
     language_names = list(LANGUAGE_OPTIONS)
-    current_language = st.session_state.get("language", "English")
+    current_language = st.session_state.get("language", "Türkçe")
     if current_language not in language_names:
-        current_language = "English"
+        current_language = "Türkçe"
         st.session_state["language"] = current_language
     st.sidebar.radio(
         _t("language"),
@@ -614,7 +735,7 @@ def _render_content_inputs() -> None:
 def _render_header() -> None:
     """Render the dashboard header."""
     mock_mode = os.getenv("BUYERLAB_MOCK_MODE", "").strip().lower() == "true"
-    mock_badge = "<span class='status-pill mock'>Mock mode active</span>" if mock_mode else ""
+    mock_badge = f"<span class='status-pill mock'>{_escape(_t('mock_on'))}</span>" if mock_mode else ""
     st.markdown(
         f"""
         <section class="hero">
@@ -622,19 +743,27 @@ def _render_header() -> None:
             <p class="eyebrow">{_escape(_t("app_eyebrow"))}</p>
             <h1>BuyerLab AI</h1>
             <p class="tagline">{_escape(_t("tagline"))}</p>
+            {_support_line(_t("tagline_support"))}
             <p class="hero-copy">{_escape(_t("hero_copy"))}</p>
             <p class="hero-disclaimer">{_escape(_t("hero_disclaimer"))}</p>
           </div>
           <div class="hero-badges">
-            <span class="status-pill">pre-launch audit</span>
-            <span class="status-pill">launch readiness</span>
-            <span class="status-pill">heuristic local price perception</span>
+            <span class="status-pill">{_escape(_t("badge_audit"))}</span>
+            <span class="status-pill">{_escape(_t("badge_readiness"))}</span>
+            <span class="status-pill">{_escape(_t("badge_price"))}</span>
             {mock_badge}
           </div>
         </section>
         """,
         unsafe_allow_html=True,
     )
+
+
+def _support_line(text: str) -> str:
+    """Render optional short English support copy without crowding the header."""
+    if not text:
+        return ""
+    return f"<p class='tagline-support'>{_escape(text)}</p>"
 
 
 def _render_empty_state() -> None:
@@ -710,9 +839,9 @@ def _render_launch_readiness(
         _audit_panel(_t("main_blocker"), final_report.main_blocker or final_report.summary)
         _audit_panel(_t("executive_verdict"), final_report.executive_verdict or final_report.summary)
         if final_report.buyer_loss_summary:
-            _audit_panel("Buyer Loss Summary", final_report.buyer_loss_summary)
+            _audit_panel(_t("buyer_loss_summary"), final_report.buyer_loss_summary)
         if final_report.launch_decision_summary:
-            _audit_panel("Launch Decision Summary", final_report.launch_decision_summary)
+            _audit_panel(_t("launch_decision_summary"), final_report.launch_decision_summary)
     with col2:
         st.markdown(f"#### {_t('next_actions')}")
         _render_list(final_report.next_best_actions or final_report.top_action_items)
@@ -720,10 +849,10 @@ def _render_launch_readiness(
         _render_list(final_report.required_fix_before_launch or final_report.top_conversion_blockers)
 
     risk_cols = st.columns(4)
-    risk_cols[0].metric("Trust Gap", final_report.trust_risk_score)
-    risk_cols[1].metric("Price Justification Gap", final_report.price_resistance_score)
-    risk_cols[2].metric("Clarity", final_report.clarity_score)
-    risk_cols[3].metric("Return Risk", final_report.return_risk_score)
+    risk_cols[0].metric("Güven Açığı" if _language_code() == "tr" else "Trust Gap", final_report.trust_risk_score)
+    risk_cols[1].metric("Fiyat Gerekçesi Açığı" if _language_code() == "tr" else "Price Justification Gap", final_report.price_resistance_score)
+    risk_cols[2].metric("Netlik" if _language_code() == "tr" else "Clarity", final_report.clarity_score)
+    risk_cols[3].metric("İade Riski" if _language_code() == "tr" else "Return Risk", final_report.return_risk_score)
     st.caption(_t("score_caption"))
 
 
@@ -753,9 +882,9 @@ def _render_persona_cards(
                         f"<span class='badge {response.decision}'>{_escape(_localized_label(response.decision))}</span>"
                         f"<div class='intent'>{response.purchase_intent}/100 {_escape(_t('intent'))}</div>"
                         f"<div class='confidence'>{response.confidence}/100 {_escape(_t('confidence'))}</div>"
-                        f"<p>{_escape(response.main_reason)}</p>"
-                        f"<small><b>{_escape(_t('top_objection'))}:</b> {_escape(objection)}</small>"
-                        f"<small><b>{_escape(_t('suggested_fix'))}:</b> {_escape(response.suggested_fix)}</small>"
+                        f"<p>{_escape(_report_text(response.main_reason))}</p>"
+                        f"<small><b>{_escape(_t('top_objection'))}:</b> {_escape(_report_text(objection))}</small>"
+                        f"<small><b>{_escape(_t('suggested_fix'))}:</b> {_escape(_report_text(response.suggested_fix))}</small>"
                         f"<small><b>{_escape(_t('business_impact'))}:</b> {_escape(_localized_label(business_impact))}</small>"
                     ),
                 )
@@ -764,7 +893,7 @@ def _render_persona_cards(
                     title=_persona_name(persona.name),
                     body=(
                         "<span class='badge pending'>pending</span>"
-                        f"<p>{_escape(persona.decision_style)}</p>"
+                        f"<p>{_escape(_report_text(persona.decision_style))}</p>"
                         f"<small>{_escape(_t('waiting'))}</small>"
                     ),
                 )
@@ -782,9 +911,9 @@ def _render_buyer_loss_analysis(buyer_loss_analysis: list[dict[str, Any]]) -> No
             "Persona": _persona_name(row.get("persona_name", row.get("persona_id", ""))),
             _t("decision"): _localized_label(row.get("final_decision", "")),
             _t("intent"): row.get("purchase_intent", 0),
-            "Business impact": _localized_label(row.get("business_impact", "")),
-            _t("main_blocker"): row.get("main_loss_reason", ""),
-            _t("suggested_fix"): row.get("suggested_fix", ""),
+            _t("business_impact"): _localized_label(row.get("business_impact", "")),
+            _t("main_blocker"): _report_text(row.get("main_loss_reason", "")),
+            _t("suggested_fix"): _report_text(row.get("suggested_fix", "")),
         }
         for row in buyer_loss_analysis
     ]
@@ -804,7 +933,7 @@ def _render_debate_terminal(state: SimulationState) -> None:
             "<div class='terminal-line'>"
             f"<span>{_escape(_persona_name(turn.speaker))}</span>"
             f"<em>{_escape(_localized_label(turn.stance))}</em>"
-            f"{_escape(turn.message)}"
+            f"{_escape(_report_text(turn.message))}"
             "</div>"
         )
     st.markdown(f"<div class='terminal'>{''.join(lines)}</div>", unsafe_allow_html=True)
@@ -827,7 +956,7 @@ def _render_market_context(state: SimulationState) -> None:
     col1, col2 = st.columns([1, 1])
     with col1:
         _audit_panel(
-            "Price Justification Verdict",
+            _t("price_justification_verdict"),
             (
                 final_report.price_justification_verdict
                 if final_report and final_report.price_justification_verdict
@@ -843,7 +972,7 @@ def _render_market_context(state: SimulationState) -> None:
     with col2:
         if _has_competitor_context(product.competitor_context):
             _audit_panel(
-                "Competitor Gap Verdict",
+                _t("competitor_gap_verdict"),
                 (
                     final_report.competitor_gap_verdict
                     if final_report and final_report.competitor_gap_verdict
@@ -851,7 +980,7 @@ def _render_market_context(state: SimulationState) -> None:
                 ),
             )
             _audit_panel(_t("competitor_gap"), competitor_gap.value_gap_summary)
-            _audit_panel("Competitor positioning", competitor_gap.competitor_positioning_comment)
+            _audit_panel(_t("competitor_positioning"), competitor_gap.competitor_positioning_comment)
             st.markdown(f"#### {_t('proofs_to_win')}")
             _render_list(competitor_gap.required_proofs_to_win)
         else:
@@ -870,11 +999,11 @@ def _render_category_audit(state: SimulationState) -> None:
     for row in rows_source:
         rows.append(
             {
-                _t("required_field"): row.get("field_name", row.get("field", "")),
+                _t("required_field"): _report_text(row.get("field_name", row.get("field", ""))),
                 _t("status"): _localized_label(row.get("status", "")),
                 _t("impact"): _localized_label(row.get("impact", "")),
-                _t("explanation"): row.get("explanation", row.get("note", "")),
-                _t("suggested_fix"): row.get("suggested_fix", ""),
+                _t("explanation"): _report_text(row.get("explanation", row.get("note", ""))),
+                _t("suggested_fix"): _report_text(row.get("suggested_fix", "")),
             }
         )
 
@@ -906,8 +1035,8 @@ def _render_attention_map(attention_map: AttentionMapReport) -> None:
                 _t("friction"): score.friction_score,
                 _t("priority"): _localized_label(priority),
                 _t("sentiment"): _localized_label(score.sentiment),
-                _t("reason"): score.reason,
-                _t("suggested_fix"): score.suggested_fix,
+                _t("reason"): _report_text(score.reason),
+                _t("suggested_fix"): _report_text(score.suggested_fix),
             }
         )
     st.dataframe(rows, width="stretch", hide_index=True)
@@ -916,7 +1045,7 @@ def _render_attention_map(attention_map: AttentionMapReport) -> None:
     cols[0].metric(_t("strongest"), _section_name(attention_map.strongest_section))
     cols[1].metric(_t("weakest"), _section_name(attention_map.weakest_section))
     cols[2].metric(_t("highest_friction"), _section_name(attention_map.highest_friction_section))
-    st.info(attention_map.summary)
+    st.info(_report_text(attention_map.summary))
 
 
 def _render_optimization(suggestion: Any) -> None:
@@ -934,7 +1063,7 @@ def _render_optimization(suggestion: Any) -> None:
         _render_pills(suggestion.trust_signals)
         trust_checklist = getattr(suggestion, "trust_proof_checklist", [])
         if trust_checklist:
-            st.markdown("#### Trust Proof Checklist")
+            st.markdown(f"#### {_t('trust_proof_checklist')}")
             _render_list(trust_checklist)
 
     competitor_suggestion = getattr(suggestion, "competitor_comparison_suggestion", "")
@@ -942,9 +1071,9 @@ def _render_optimization(suggestion: Any) -> None:
     if competitor_suggestion or missing_checklist:
         col_comp, col_missing = st.columns([1, 1])
         with col_comp:
-            _audit_panel("Competitor Comparison Suggestion", competitor_suggestion)
+            _audit_panel(_t("competitor_comparison"), competitor_suggestion)
         with col_missing:
-            st.markdown("#### Missing Information Checklist")
+            st.markdown(f"#### {_t('missing_information_checklist')}")
             _render_list(missing_checklist)
 
     col3, col4 = st.columns([1, 1])
@@ -972,7 +1101,7 @@ def _render_before_after(comparison: dict[str, Any], after_state: SimulationStat
         st.markdown(f"#### {_t('remaining_risks')}")
         _render_list(comparison["remaining_risks"])
 
-    st.info(comparison["summary"])
+    st.info(_report_text(comparison["summary"]))
     if after_state.final_report:
         st.caption(_t("score_caption"))
 
@@ -1139,7 +1268,7 @@ def _load_product_into_state(sample: dict[str, Any]) -> None:
 def _initialize_session_state() -> None:
     """Initialize product brief state once."""
     defaults = {
-        "language": "English",
+        "language": "Türkçe",
         "selected_sample": "",
         "brand": "",
         "model": "",
@@ -1273,7 +1402,7 @@ def _business_impact(decision: str, purchase_intent: int) -> str:
 
 def _short_metric(value: Any, limit: int = 34) -> str:
     """Keep metric values readable in compact cards."""
-    text = " ".join(str(value or "None").split())
+    text = _report_text(value) or _t("not_provided")
     if len(text) <= limit:
         return text
     return f"{text[: limit - 3].rstrip()}..."
@@ -1282,17 +1411,17 @@ def _short_metric(value: Any, limit: int = 34) -> str:
 def _render_list(values: list[str] | tuple[str, ...]) -> None:
     """Render concise dashboard list items."""
     if not values:
-        st.caption("No items provided.")
+        st.caption(_t("no_items"))
         return
     for item in values[:6]:
-        st.markdown(f"- {item}")
+        st.markdown(f"- {_report_text(item)}")
 
 
 def _render_pills(values: list[str]) -> None:
     """Render compact labels."""
-    safe_values = values or ["None"]
+    safe_values = values or [_t("not_provided")]
     html = "".join(
-        f"<span class='pill'>{_escape(_display_label(value))}</span>" for value in safe_values
+        f"<span class='pill'>{_escape(_report_text(_display_label(value)))}</span>" for value in safe_values
     )
     st.markdown(f"<div class='pill-row'>{html}</div>", unsafe_allow_html=True)
 
@@ -1303,7 +1432,7 @@ def _audit_panel(title: str, body: str) -> None:
         f"""
         <div class="audit-panel">
           <h4>{_escape(title)}</h4>
-          <p>{_escape(body or "Not provided.")}</p>
+          <p>{_escape(_report_text(body) or _t("not_provided"))}</p>
         </div>
         """,
         unsafe_allow_html=True,
@@ -1389,6 +1518,11 @@ def _inject_styles() -> None:
             color: #d1d5db;
             font-size: 19px;
             margin: 0 0 10px;
+          }
+          .tagline-support {
+            color: #7dd3fc;
+            font-size: 14px;
+            margin: -4px 0 12px;
           }
           .hero-copy {
             color: #94a3b8;

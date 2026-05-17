@@ -79,6 +79,7 @@ Return only valid JSON with this exact shape:
 }}
 
 Rules:
+- Write all user-facing copy and checklist items in Turkish.
 - Keep all text concise, practical, and seller-focused.
 - Prioritize trust blockers first.
 - Then address missing product information.
