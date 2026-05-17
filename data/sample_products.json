@@ -1,7 +1,7 @@
 [
   {
-    "id": "wireless-headphones-try",
-    "name": "Wireless earbuds with missing warranty",
+    "id": "wireless-earbuds-demo",
+    "name": "Wireless Earbuds Demo",
     "brand": "SoundPeak",
     "model": "AirBass X2",
     "product_type": "Wireless earbuds",
@@ -13,24 +13,22 @@
     "local_market": "Türkiye",
     "price": 799.0,
     "currency": "TRY",
-    "description": "Compact wireless earbuds positioned for daily listening and calls. The page claims clear microphone quality and long battery life, but does not yet show test proof.",
-    "target_audience": "Students and young professionals who want affordable daily earbuds.",
-    "value_proposition": "Daily wireless earbuds with practical call quality at a mid-range Türkiye price point.",
-    "warranty_or_return_policy": "Warranty terms are planned but not yet written clearly on the page.",
-    "shipping_info": "Ships across Türkiye; delivery time and shipping fee are not yet specified.",
-    "trust_signals": [
-      "Secure checkout",
-      "Support email listed"
-    ],
-    "reviews_or_social_proof": "Pre-launch product page with no public customer reviews yet.",
+    "description": "Compact wireless earbuds positioned for daily listening and calls. The page claims better microphone quality and longer battery life, but the claim is not supported with test proof.",
+    "target_audience": "Students and young professionals who need affordable earbuds for music and calls.",
+    "value_proposition": "Mid-range wireless earbuds for daily use with a claimed stronger microphone experience.",
+    "warranty_or_return_policy": "Warranty is mentioned but duration and return conditions are unclear.",
+    "shipping_info": "Ships across Türkiye; delivery time and shipping fee are not clearly stated.",
+    "trust_signals": [],
+    "reviews_or_social_proof": "No public reviews yet. Competitor appears to have more visible social proof.",
     "call_to_action": "Join the launch list",
-    "image_notes": "Needs close-up product images, in-ear scale photos, and a clear charging case image.",
+    "image_notes": "Needs charging case closeups, in-ear scale photos, and a microphone test proof asset.",
     "competitor_context": {
       "competitor_name": "TuneGo Lite Pro",
       "competitor_price": 699.0,
       "competitor_currency": "TRY",
       "competitor_strengths": [
-        "Lower listed price",
+        "Lower price",
+        "More visible social proof",
         "Battery life is stated more clearly"
       ],
       "competitor_weaknesses": [
@@ -40,299 +38,260 @@
     },
     "proof_assets": [],
     "known_limitations": [
+      "Battery life is not specified clearly",
       "Warranty is unclear",
-      "Battery life is not specified",
-      "Microphone claim has no proof asset"
+      "No microphone test proof",
+      "No real trust signals",
+      "Competitor has more social proof"
     ]
   },
   {
-    "id": "running-shoes-try",
-    "name": "Running shoes with size/fit risk",
-    "brand": "StrideLite",
-    "model": "Daily Run",
-    "product_type": "Daily running shoes",
-    "title": "StrideLite Daily Run Shoes",
+    "id": "running-shoes-demo",
+    "name": "Running Shoes Demo",
+    "brand": "Runora",
+    "model": "FlexStep 3",
+    "product_type": "Running shoes",
+    "title": "Runora FlexStep 3 Running Shoes",
     "category": "Fashion shoes",
     "normalized_category": "fashion_shoes",
-    "market_segment": "upper_mid",
-    "intended_use_case": "Short daily runs, walking, gym commutes, and weekend errands.",
+    "market_segment": "mid_range",
+    "intended_use_case": "Beginner road running, walking, light gym sessions, and daily active use.",
     "local_market": "Türkiye",
-    "price": 3490.0,
+    "price": 1499.0,
     "currency": "TRY",
-    "description": "Lightweight road running shoes designed for daily use. The page mentions breathable comfort but needs more fit and material detail.",
-    "target_audience": "Beginner runners and active commuters looking for one comfortable daily shoe.",
-    "value_proposition": "A daily running shoe that balances breathable comfort and everyday styling.",
-    "warranty_or_return_policy": "",
-    "shipping_info": "Standard shipping is planned; fee and delivery time are not yet shown.",
+    "description": "Lightweight running shoes for daily movement. The page mentions comfort but does not explain sizing, fit, or material enough for confident purchase.",
+    "target_audience": "Beginner runners and active commuters who want one comfortable daily shoe.",
+    "value_proposition": "Comfortable daily running shoes with practical styling for everyday activity.",
+    "warranty_or_return_policy": "Return and exchange policy is vague and does not explain worn-item conditions.",
+    "shipping_info": "Standard shipping is planned; delivery window and fee need clearer placement.",
     "trust_signals": [],
-    "reviews_or_social_proof": "No public customer reviews yet.",
+    "reviews_or_social_proof": "No public buyer photos or fit feedback yet.",
     "call_to_action": "Join the launch list",
-    "image_notes": "Needs side, sole, on-foot, and size reference photos.",
+    "image_notes": "Needs on-foot images, sole detail, material closeups, and size reference photos.",
     "competitor_context": {
-      "competitor_name": "RoadFlex Basic",
-      "competitor_price": 2990.0,
+      "competitor_name": "PaceWay CloudRun",
+      "competitor_price": 1399.0,
       "competitor_currency": "TRY",
       "competitor_strengths": [
         "Lower price",
-        "Visible size guide",
-        "Exchange policy shown"
+        "Size chart is visible",
+        "Exchange policy is clearer"
       ],
       "competitor_weaknesses": [
-        "Less lifestyle positioning"
+        "Less lifestyle-focused product copy"
       ],
-      "our_differentiator": "Lighter everyday commute positioning"
+      "our_differentiator": "Cleaner everyday style and claimed flexible sole comfort"
     },
     "proof_assets": [],
     "known_limitations": [
-      "Size guide is missing",
-      "Return policy is missing",
-      "Material detail is thin"
+      "No size guide",
+      "Fit information is unclear",
+      "Material details are weak",
+      "Return/exchange policy is vague"
     ]
   },
   {
-    "id": "coffee-machine-try",
-    "name": "Coffee machine with premium price pressure",
-    "brand": "BrewNest",
-    "model": "MiniBarista 4",
-    "product_type": "Compact espresso machine",
-    "title": "BrewNest MiniBarista 4 Coffee Machine",
+    "id": "coffee-machine-demo",
+    "name": "Coffee Machine Demo",
+    "brand": "Brewora",
+    "model": "CompactBar Pro",
+    "product_type": "Coffee machine",
+    "title": "Brewora CompactBar Pro Coffee Machine",
     "category": "Small home appliance",
     "normalized_category": "small_home_appliance",
     "market_segment": "upper_mid",
-    "intended_use_case": "Small kitchens, home office coffee breaks, and first-time espresso users.",
+    "intended_use_case": "Small kitchens, home office coffee breaks, and first-time espresso-style coffee users.",
     "local_market": "Türkiye",
-    "price": 6890.0,
+    "price": 4299.0,
     "currency": "TRY",
-    "description": "A compact espresso machine for small kitchens. The page explains the space-saving design but needs clearer technical specifications and service details.",
-    "target_audience": "Home coffee drinkers who want espresso without a large countertop machine.",
-    "value_proposition": "A compact home espresso setup for small kitchens without premium machine pricing.",
-    "warranty_or_return_policy": "2-year limited warranty draft available; service process is not fully explained.",
-    "shipping_info": "Free shipping is planned for launch week.",
+    "description": "Compact coffee machine for small kitchens. The page highlights premium design but does not yet provide enough technical, maintenance, or warranty detail.",
+    "target_audience": "Home coffee buyers who want a compact machine without a large countertop setup.",
+    "value_proposition": "A compact coffee setup for small kitchens with a premium-looking design.",
+    "warranty_or_return_policy": "Warranty is mentioned but duration, service process, and return conditions are unclear.",
+    "shipping_info": "Shipping is available across Türkiye; delivery timing needs clearer placement.",
     "trust_signals": [
-      "Warranty planned",
       "Secure checkout"
     ],
-    "reviews_or_social_proof": "No public customer reviews yet; internal product photos are available.",
+    "reviews_or_social_proof": "No public customer reviews yet; product photos are still being prepared.",
     "call_to_action": "Reserve for launch",
-    "image_notes": "Show countertop scale, water tank, portafilter, and cup clearance.",
+    "image_notes": "Needs water tank view, cup clearance, cleaning process, dimensions, and countertop scale image.",
     "competitor_context": {
-      "competitor_name": "CafePod Compact",
-      "competitor_price": 5990.0,
+      "competitor_name": "HomeBrew Mini Plus",
+      "competitor_price": 3899.0,
       "competitor_currency": "TRY",
       "competitor_strengths": [
         "Lower price",
-        "Service network described"
+        "Technical specs listed",
+        "Warranty duration is clearer"
       ],
       "competitor_weaknesses": [
-        "Less compact design"
+        "Less compact visual positioning"
       ],
-      "our_differentiator": "Smaller footprint and easier home-office positioning"
+      "our_differentiator": "Premium compact design for small kitchens"
     },
     "proof_assets": [
-      "Product photos",
-      "Warranty draft"
+      "Draft product photos"
     ],
     "known_limitations": [
-      "Technical specifications are incomplete",
-      "Service terms need detail"
+      "Technical specs are incomplete",
+      "Warranty is unclear",
+      "Cleaning and maintenance details are missing",
+      "Premium price is not fully justified"
     ]
   },
   {
-    "id": "handmade-bag-try",
-    "name": "Handmade leather bag with authenticity concerns",
-    "brand": "Atelier Mira",
-    "model": "City Tote",
-    "product_type": "Handmade leather tote bag",
-    "title": "Atelier Mira City Tote",
-    "category": "Handmade bag",
-    "normalized_category": "handmade_bag",
-    "market_segment": "premium",
-    "intended_use_case": "Daily work carry, cafe work sessions, and weekend city use.",
-    "local_market": "Türkiye",
-    "price": 5200.0,
-    "currency": "TRY",
-    "description": "A handmade tote bag made for laptop, notebook, and daily carry. The page highlights craftsmanship but needs dimensions and material proof.",
-    "target_audience": "Urban professionals who prefer handmade accessories over mass-market bags.",
-    "value_proposition": "Handmade daily carry with a refined work-friendly design.",
-    "warranty_or_return_policy": "Returns accepted for unused items within 14 days.",
-    "shipping_info": "Made to order; ships in 5-7 business days.",
-    "trust_signals": [
-      "Maker story planned",
-      "Return terms visible"
-    ],
-    "reviews_or_social_proof": "No public reviews yet; workshop photos are available.",
-    "call_to_action": "Pre-order the tote",
-    "image_notes": "Needs leather closeups, inside capacity photos, and laptop-fit image.",
-    "competitor_context": {
-      "competitor_name": "UrbanCraft Tote",
-      "competitor_price": 4600.0,
-      "competitor_currency": "TRY",
-      "competitor_strengths": [
-        "Lower price",
-        "Dimensions listed"
-      ],
-      "competitor_weaknesses": [
-        "Less distinctive maker story"
-      ],
-      "our_differentiator": "Handmade finish and cleaner work-carry design"
-    },
-    "proof_assets": [
-      "Workshop photos",
-      "Return terms"
-    ],
-    "known_limitations": [
-      "Exact dimensions are not listed",
-      "Material grade is not explained"
-    ]
-  },
-  {
-    "id": "web-design-service-try",
-    "name": "Web design service with vague scope",
-    "brand": "PixelSprint",
-    "model": "Launch Page Sprint",
-    "product_type": "Landing page design service",
-    "title": "PixelSprint Launch Page Sprint",
+    "id": "digital-service-demo",
+    "name": "Digital Service Demo",
+    "brand": "PixelNest Studio",
+    "model": "Starter Business Website Package",
+    "product_type": "Web design service",
+    "title": "PixelNest Studio Starter Business Website Package",
     "category": "Digital service",
     "normalized_category": "digital_service",
-    "market_segment": "mid_range",
-    "intended_use_case": "Early-stage founders preparing a product landing page before ads or outreach.",
+    "market_segment": "upper_mid",
+    "intended_use_case": "Small businesses preparing a first website before ads, outreach, or marketplace listings.",
     "local_market": "Türkiye",
-    "price": 12000.0,
+    "price": 9999.0,
     "currency": "TRY",
-    "description": "A focused landing page design service for founders. The page describes the outcome but needs clearer scope, revision terms, and portfolio proof.",
-    "target_audience": "Founders, makers, and small teams launching a new offer.",
-    "value_proposition": "A launch-ready landing page without hiring a full design team.",
-    "warranty_or_return_policy": "Includes one revision round; refund terms are not specified.",
-    "shipping_info": "Digital delivery in 7 business days after brief approval.",
+    "description": "A starter website package for small businesses. The page promises a professional site but does not clearly define scope, delivery timeline, revisions, or support.",
+    "target_audience": "Small business owners who need a simple launch-ready website.",
+    "value_proposition": "A focused starter website package without hiring a full agency.",
+    "warranty_or_return_policy": "Revision and refund terms are not clearly explained.",
+    "shipping_info": "Digital delivery; timeline is described generally but not committed clearly.",
     "trust_signals": [
-      "Delivery timeline stated",
-      "Support email listed"
+      "Business email listed"
     ],
-    "reviews_or_social_proof": "Portfolio examples are planned but not yet linked.",
-    "call_to_action": "Book a launch sprint",
-    "image_notes": "Show before-after page examples and deliverable preview.",
+    "reviews_or_social_proof": "Portfolio examples are referenced but not linked or shown.",
+    "call_to_action": "Request a project slot",
+    "image_notes": "Needs package scope preview, portfolio screenshots, and a deliverables checklist.",
     "competitor_context": {
-      "competitor_name": "LaunchCraft Studio",
-      "competitor_price": 15000.0,
-      "competitor_currency": "TRY",
-      "competitor_strengths": [
-        "Portfolio examples",
-        "Clear package scope"
-      ],
-      "competitor_weaknesses": [
-        "Higher price"
-      ],
-      "our_differentiator": "Faster delivery and simpler founder-focused package"
-    },
-    "proof_assets": [],
-    "known_limitations": [
-      "Portfolio proof is missing",
-      "Included and excluded items are not fully listed"
-    ]
-  },
-  {
-    "id": "online-course-try",
-    "name": "Online course with weak instructor proof",
-    "brand": "CreatorPath",
-    "model": "First Launch",
-    "product_type": "Online course",
-    "title": "CreatorPath First Launch Course",
-    "category": "Online course",
-    "normalized_category": "online_course",
-    "market_segment": "premium",
-    "intended_use_case": "Creators building their first digital product launch plan.",
-    "local_market": "Türkiye",
-    "price": 9500.0,
-    "currency": "TRY",
-    "description": "An online course for creators preparing a first launch. The page outlines weekly modules but needs stronger outcome proof and support expectations.",
-    "target_audience": "Creators, freelancers, and educators preparing a first digital product.",
-    "value_proposition": "A structured path from idea to launch page, offer, and first outreach plan.",
-    "warranty_or_return_policy": "Refund policy is not yet finalized.",
-    "shipping_info": "Digital access starts after enrollment; support terms need detail.",
-    "trust_signals": [
-      "Instructor bio planned",
-      "Curriculum outline drafted"
-    ],
-    "reviews_or_social_proof": "No public student outcomes yet.",
-    "call_to_action": "Join the next cohort",
-    "image_notes": "Show course dashboard, module outline, worksheets, and instructor profile.",
-    "competitor_context": {
-      "competitor_name": "LaunchSchool Lite",
-      "competitor_price": 7000.0,
+      "competitor_name": "WebCraft Basic",
+      "competitor_price": 7999.0,
       "competitor_currency": "TRY",
       "competitor_strengths": [
         "Lower price",
-        "Student examples shown"
+        "Package scope is clearer",
+        "Portfolio examples are visible"
       ],
       "competitor_weaknesses": [
-        "Less live feedback"
+        "Less custom positioning"
       ],
-      "our_differentiator": "Live feedback sessions and launch templates"
+      "our_differentiator": "More tailored starter strategy and cleaner launch messaging"
     },
     "proof_assets": [],
     "known_limitations": [
-      "No public student outcomes",
-      "Refund policy is unclear",
-      "Live support hours are not specified"
+      "Project scope is unclear",
+      "Revision policy is missing",
+      "Delivery timeline is vague",
+      "Portfolio proof is weak",
+      "Support terms are unclear"
+    ]
+  },
+  {
+    "id": "online-course-demo",
+    "name": "Online Course Demo",
+    "brand": "DataPath Academy",
+    "model": "SQL Foundations for Beginners",
+    "product_type": "Online course",
+    "title": "DataPath Academy SQL Foundations for Beginners",
+    "category": "Online course",
+    "normalized_category": "online_course",
+    "market_segment": "mid_range",
+    "intended_use_case": "Beginners learning SQL for school projects, entry-level analytics work, or career switching.",
+    "local_market": "Türkiye",
+    "price": 899.0,
+    "currency": "TRY",
+    "description": "Beginner SQL course for people who want practical database skills. The page explains the topic but gives only broad module names and limited proof of instructor credibility.",
+    "target_audience": "Beginners who want a practical first SQL course.",
+    "value_proposition": "A beginner-friendly path to core SQL skills with practical exercises.",
+    "warranty_or_return_policy": "",
+    "shipping_info": "Digital access after enrollment; support and lesson access terms are not clearly described.",
+    "trust_signals": [
+      "Course outline draft"
+    ],
+    "reviews_or_social_proof": "No public student outcomes or sample lesson yet.",
+    "call_to_action": "Join the course waitlist",
+    "image_notes": "Needs instructor profile, module detail, sample lesson screen, and exercise preview.",
+    "competitor_context": {
+      "competitor_name": "QueryStart SQL Basics",
+      "competitor_price": 699.0,
+      "competitor_currency": "TRY",
+      "competitor_strengths": [
+        "Lower price",
+        "Sample lesson is available",
+        "Instructor profile is clearer"
+      ],
+      "competitor_weaknesses": [
+        "Less emphasis on practice projects"
+      ],
+      "our_differentiator": "More practical exercises and beginner-friendly structure"
+    },
+    "proof_assets": [],
+    "known_limitations": [
+      "Instructor credibility is not proven",
+      "Curriculum details are too general",
+      "Learning outcomes are unclear",
+      "Refund policy is missing",
+      "Sample lesson is not provided"
     ]
   },
   {
     "id": "overpriced-pencil-edge",
-    "name": "Overpriced pencil edge case",
-    "brand": "LineLux",
-    "model": "Mono One",
-    "product_type": "Single graphite pencil",
-    "title": "LineLux Mono One Pencil",
+    "name": "Edge Case: Overpriced Pencil",
+    "brand": "NoteLux",
+    "model": "Executive Pencil",
+    "product_type": "Pencil",
+    "title": "NoteLux Executive Pencil",
     "category": "General product",
     "normalized_category": "general_product",
     "market_segment": "premium",
-    "intended_use_case": "Daily note-taking and desk aesthetics.",
+    "intended_use_case": "Executive desk setup and luxury stationery positioning.",
     "local_market": "Türkiye",
-    "price": 4500.0,
+    "price": 1000000.0,
     "currency": "TRY",
-    "description": "A single graphite pencil presented as a premium desk object. The page uses lifestyle copy but gives almost no proof of material, origin, or durability.",
-    "target_audience": "Design-focused desk setup buyers.",
-    "value_proposition": "A refined pencil for people who care about the feel of their desk tools.",
+    "description": "A single pencil positioned as an executive desk object. The page does not explain why the price is reasonable or what measurable value the buyer receives.",
+    "target_audience": "Luxury desk setup buyers and stationery collectors.",
+    "value_proposition": "",
     "warranty_or_return_policy": "",
     "shipping_info": "",
     "trust_signals": [],
     "reviews_or_social_proof": "",
     "call_to_action": "Buy the pencil",
-    "image_notes": "Only one dark mood image is planned.",
+    "image_notes": "Only one product image is planned; no material or scale proof.",
     "competitor_context": {
-      "competitor_name": "DeskMark Premium Set",
-      "competitor_price": 450.0,
+      "competitor_name": "WriteMate Pencil Pack",
+      "competitor_price": 79.0,
       "competitor_currency": "TRY",
       "competitor_strengths": [
-        "Includes multiple pencils",
-        "Much lower price"
+        "Much lower price",
+        "Includes multiple pencils"
       ],
       "competitor_weaknesses": [
-        "Less premium positioning"
+        "Not positioned as premium"
       ],
-      "our_differentiator": "Minimalist design object positioning"
+      "our_differentiator": "Luxury executive positioning"
     },
     "proof_assets": [],
     "known_limitations": [
-      "Price is unusually high for a simple product",
-      "No material proof",
-      "No return policy",
-      "No shipping information"
+      "Irrational price",
+      "No value proof",
+      "No trust proof",
+      "No category justification"
     ]
   },
   {
     "id": "empty-product-page-edge",
-    "name": "Empty product page edge case",
-    "brand": "",
-    "model": "",
-    "product_type": "",
+    "name": "Edge Case: Empty Product Page",
+    "brand": "Unknown",
+    "model": "Unknown",
+    "product_type": "Unknown product",
     "title": "Untitled Product Draft",
     "category": "General product",
     "normalized_category": "general_product",
-    "market_segment": "mid_range",
+    "market_segment": "budget",
     "intended_use_case": "",
     "local_market": "Türkiye",
-    "price": 999.0,
+    "price": 0.0,
     "currency": "TRY",
     "description": "",
     "target_audience": "",
@@ -353,9 +312,11 @@
     },
     "proof_assets": [],
     "known_limitations": [
-      "Product identity is missing",
-      "Page copy is empty",
-      "No trust signals"
+      "Almost all fields are empty",
+      "Product identity is unknown",
+      "No value proposition",
+      "No trust signals",
+      "No category justification"
     ]
   }
 ]

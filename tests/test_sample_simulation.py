@@ -24,16 +24,15 @@ DATA_PATH = Path(__file__).parents[1] / "data" / "sample_products.json"
 def test_sample_products_are_valid_and_safe():
     products = json.loads(DATA_PATH.read_text(encoding="utf-8"))
 
-    assert len(products) >= 8
+    assert len(products) >= 7
     assert {product["name"] for product in products} >= {
-        "Wireless earbuds with missing warranty",
-        "Running shoes with size/fit risk",
-        "Coffee machine with premium price pressure",
-        "Handmade leather bag with authenticity concerns",
-        "Web design service with vague scope",
-        "Online course with weak instructor proof",
-        "Overpriced pencil edge case",
-        "Empty product page edge case",
+        "Wireless Earbuds Demo",
+        "Running Shoes Demo",
+        "Coffee Machine Demo",
+        "Digital Service Demo",
+        "Online Course Demo",
+        "Edge Case: Overpriced Pencil",
+        "Edge Case: Empty Product Page",
     }
     assert any(not product["trust_signals"] for product in products)
     assert any(not product["shipping_info"] for product in products)
@@ -63,12 +62,68 @@ def test_sample_products_are_valid_and_safe():
         "proof_assets",
         "known_limitations",
     }
+    competitor_fields = {
+        "competitor_name",
+        "competitor_price",
+        "competitor_currency",
+        "competitor_strengths",
+        "competitor_weaknesses",
+        "our_differentiator",
+    }
+    real_brand_blocklist = {
+        "adidas",
+        "amazon",
+        "apple",
+        "bosch",
+        "delonghi",
+        "dyson",
+        "google",
+        "huawei",
+        "jbl",
+        "lg",
+        "meta",
+        "microsoft",
+        "nike",
+        "philips",
+        "samsung",
+        "sony",
+        "xiaomi",
+    }
     for product in products:
         assert required_fields <= product.keys()
         assert isinstance(product["trust_signals"], list)
         assert isinstance(product["proof_assets"], list)
         assert isinstance(product["known_limitations"], list)
+        assert isinstance(product["competitor_context"], dict)
+        assert competitor_fields <= product["competitor_context"].keys()
+        assert isinstance(product["competitor_context"]["competitor_strengths"], list)
+        assert isinstance(product["competitor_context"]["competitor_weaknesses"], list)
         assert "certified" not in json.dumps(product).lower()
+
+        searchable_brand_text = " ".join(
+            [
+                product.get("brand", ""),
+                product.get("model", ""),
+                product.get("title", ""),
+                product["competitor_context"].get("competitor_name", ""),
+            ]
+        ).lower()
+        assert not any(brand in searchable_brand_text for brand in real_brand_blocklist)
+
+
+def test_sample_products_include_demo_edge_cases():
+    products = json.loads(DATA_PATH.read_text(encoding="utf-8"))
+    by_id = {product["id"]: product for product in products}
+
+    overpriced = by_id["overpriced-pencil-edge"]
+    empty_page = by_id["empty-product-page-edge"]
+
+    assert overpriced["price"] >= 1_000_000
+    assert overpriced["normalized_category"] == "general_product"
+    assert "Irrational price" in overpriced["known_limitations"]
+    assert empty_page["price"] == 0
+    assert empty_page["description"] == ""
+    assert empty_page["competitor_context"]["competitor_name"] == ""
 
 
 def test_sample_simulation_runs_in_mock_mode():
