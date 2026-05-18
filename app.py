@@ -64,8 +64,8 @@ UI_TEXT = {
         "hero_disclaimer": "Designed to find product-page weaknesses before launch.",
         "brief_wizard": "Language and AI Status",
         "brief_help": "Keep the setup simple: choose a language and confirm AI is connected.",
-        "workspace_title": "Test a product page in 3 minutes",
-        "workspace_help": "Enter the essentials. BuyerLab will still produce a useful report when optional proof or trust details are missing.",
+        "workspace_title": "Test a product page in 60 seconds",
+        "workspace_help": "Paste the basic product page details. BuyerLab returns a clear launch decision and fix plan without requiring a long form.",
         "core_details": "Required for a quick audit",
         "optional_details": "Optional: make the report sharper",
         "input_mode": "Input mode",
@@ -73,7 +73,10 @@ UI_TEXT = {
         "advanced_mode": "Advanced mode",
         "quick_mode_help": "Use only the fields needed for a fast product-page audit.",
         "advanced_mode_help": "Add proof, trust, identity, and page details for a sharper report.",
-        "executive_report": "Executive Report",
+        "executive_report": "60-Second Report",
+        "one_minute_decision": "Launch decision",
+        "one_minute_reason": "Why it matters",
+        "one_minute_action": "What to fix first",
         "first_three_fixes": "First 3 fixes",
         "expected_lift": "Expected simulated lift",
         "sample_loader": "Ready examples",
@@ -122,12 +125,12 @@ UI_TEXT = {
             "BUYERLAB_MOCK_MODE=true for test mode."
         ),
         "key_detected": "Gemini connected: live AI outputs will be used.",
-        "empty_title": "One input. One launch decision. One fix plan.",
+        "empty_title": "One minute. One decision. One fix plan.",
         "empty_copy": (
             "The report will show launch readiness, buyer persona reactions, "
             "heuristic local price perception, conversion friction, and a practical fix pack."
         ),
-        "tab_report": "Report",
+        "tab_report": "60-Second Report",
         "tab_buyers_simple": "Buyer Objections",
         "tab_fix_simple": "Fix Plan",
         "audit_details": "Audit details",
@@ -138,7 +141,7 @@ UI_TEXT = {
         "agent_discussion_details": "AI buyer discussion details",
         "three_step_1": "1. Describe the product",
         "three_step_2": "2. Pick category and price",
-        "three_step_3": "3. Get the launch report",
+        "three_step_3": "3. Read the 60-second report",
         "advanced_toggle": "Add optional proof and trust details",
         "tab_launch": "Launch Readiness",
         "tab_personas": "Buyer Personas",
@@ -242,8 +245,8 @@ UI_TEXT = {
         "hero_disclaimer": "Yayına çıkmadan önce ürün sayfasındaki zayıf noktaları bulmak için tasarlandı.",
         "brief_wizard": "Dil ve AI Durumu",
         "brief_help": "Kurulum basit kalsın: dili seç ve AI bağlantısını kontrol et.",
-        "workspace_title": "Ürün sayfasını 3 dakikada test et",
-        "workspace_help": "Sadece temel bilgileri girmen yeterli. Kanıt veya güven detayları eksikse BuyerLab bunu ürün hatası gibi değil, sayfa eksikliği gibi raporlar.",
+        "workspace_title": "Ürün sayfasını 60 saniyede test et",
+        "workspace_help": "Temel ürün bilgilerini girmen yeterli. BuyerLab uzun form istemeden net yayın kararı ve düzeltme planı verir.",
         "core_details": "Hızlı denetim için gerekli alanlar",
         "optional_details": "Opsiyonel: raporu daha keskinleştir",
         "input_mode": "Giriş modu",
@@ -251,7 +254,10 @@ UI_TEXT = {
         "advanced_mode": "Gelişmiş mod",
         "quick_mode_help": "Hızlı ürün sayfası denetimi için yalnızca temel alanları kullan.",
         "advanced_mode_help": "Daha keskin rapor için kanıt, güven, kimlik ve sayfa detayları ekle.",
-        "executive_report": "Yönetici Raporu",
+        "executive_report": "1 Dakikalık Rapor",
+        "one_minute_decision": "Yayın kararı",
+        "one_minute_reason": "Neden önemli?",
+        "one_minute_action": "İlk ne düzeltilmeli?",
         "first_three_fixes": "İlk 3 düzeltme",
         "expected_lift": "Beklenen simüle iyileşme",
         "sample_loader": "Hazır örnekler",
@@ -300,12 +306,12 @@ UI_TEXT = {
             "BUYERLAB_MOCK_MODE=true kullan."
         ),
         "key_detected": "Gemini bağlı: canlı AI çıktıları kullanılacak.",
-        "empty_title": "Tek giriş. Net yayın kararı. Uygulanabilir düzeltme planı.",
+        "empty_title": "Bir dakika. Net karar. Uygulanabilir düzeltme planı.",
         "empty_copy": (
             "Rapor; yayına hazırlık, AI müşteri profilleri, yerel TL fiyat algısı, "
             "dönüşüm sürtünmesi ve pratik düzeltme paketini gösterecek."
         ),
-        "tab_report": "Rapor",
+        "tab_report": "1 Dakikalık Rapor",
         "tab_buyers_simple": "Müşteri İtirazları",
         "tab_fix_simple": "Düzeltme Planı",
         "audit_details": "Analiz detayları",
@@ -316,7 +322,7 @@ UI_TEXT = {
         "agent_discussion_details": "AI müşteri tartışması detayları",
         "three_step_1": "1. Ürünü anlat",
         "three_step_2": "2. Kategori ve fiyatı seç",
-        "three_step_3": "3. Yayın raporunu al",
+        "three_step_3": "3. 1 dakikalık raporu oku",
         "advanced_toggle": "İsteğe bağlı kanıt ve güven detayları ekle",
         "tab_launch": "Yayına Hazırlık",
         "tab_personas": "AI Müşteri Profilleri",
@@ -1121,6 +1127,7 @@ def _render_executive_report(
 ) -> None:
     """Render a one-screen executive report for hackathon demos."""
     st.markdown(f"### {_t('executive_report')}")
+    _render_one_minute_summary(final_report, decision, first_fix)
     metric_cols = st.columns(5)
     metric_cols[0].metric(_t("launch_status"), _localized_label(final_report.launch_status))
     metric_cols[1].metric(_t("launch_score"), final_report.launch_readiness_score)
@@ -1136,6 +1143,28 @@ def _render_executive_report(
         _audit_panel(_t("expected_lift"), _expected_lift_text(comparison))
         st.markdown(f"#### {_t('first_three_fixes')}")
         _render_list((final_report.required_fix_before_launch or [first_fix])[:3])
+
+
+def _render_one_minute_summary(
+    final_report: SimulationReport,
+    decision: str,
+    first_fix: str,
+) -> None:
+    """Show the product verdict in three plain-language blocks."""
+    reason = final_report.main_blocker or final_report.summary
+    action = first_fix or (final_report.next_best_actions or [""])[0]
+    cols = st.columns(3)
+    with cols[0]:
+        _summary_card(
+            _t("one_minute_decision"),
+            _localized_label(final_report.launch_status),
+            decision,
+            final_report.launch_status,
+        )
+    with cols[1]:
+        _summary_card(_t("one_minute_reason"), _short_metric(reason, limit=42), reason)
+    with cols[2]:
+        _summary_card(_t("one_minute_action"), _short_metric(action, limit=42), action)
 
 
 def _render_persona_cards(
@@ -1737,6 +1766,26 @@ def _audit_panel(title: str, body: str) -> None:
     )
 
 
+def _summary_card(
+    label: str,
+    value: str,
+    body: str,
+    status: str = "",
+) -> None:
+    """Render a large plain-language summary card for 60-second demos."""
+    status_class = f" {status}" if status else ""
+    st.markdown(
+        f"""
+        <div class="summary-card{_escape(status_class)}">
+          <span>{_escape(label)}</span>
+          <strong>{_escape(_report_text(value) or _t("not_provided"))}</strong>
+          <p>{_escape(_report_text(body) or _t("not_provided"))}</p>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
 def _html_card(title: str, body: str) -> None:
     """Render a small dashboard card."""
     st.markdown(
@@ -1778,6 +1827,9 @@ def _inject_styles() -> None:
           .stApp {
             background: #0a0f1f;
             color: #e5e7eb;
+          }
+          .block-container {
+            padding-top: 2rem;
           }
           [data-testid="stSidebar"] {
             background: #0f172a;
@@ -1880,11 +1932,12 @@ def _inject_styles() -> None:
             border-color: rgba(34, 197, 94, 0.28);
             color: #bbf7d0;
           }
-          .empty-panel, .audit-panel, .card {
+          .empty-panel, .audit-panel, .card, .summary-card {
             background: #111827;
             border: 1px solid rgba(148, 163, 184, 0.18);
             border-radius: 8px;
             box-shadow: 0 18px 50px rgba(0, 0, 0, 0.18);
+            overflow-wrap: anywhere;
           }
           .empty-panel {
             margin: 18px 0;
@@ -1904,6 +1957,42 @@ def _inject_styles() -> None:
             color: #cbd5e1;
             font-size: 14px;
             line-height: 1.45;
+            margin: 0;
+          }
+          .summary-card {
+            border-color: rgba(56, 189, 248, 0.22);
+            margin-bottom: 18px;
+            min-height: 176px;
+            padding: 18px;
+          }
+          .summary-card.ready {
+            border-color: rgba(34, 197, 94, 0.42);
+          }
+          .summary-card.needs_fixes {
+            border-color: rgba(245, 158, 11, 0.42);
+          }
+          .summary-card.not_ready {
+            border-color: rgba(239, 68, 68, 0.42);
+          }
+          .summary-card span {
+            color: #38bdf8;
+            display: block;
+            font-size: 12px;
+            font-weight: 900;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+          }
+          .summary-card strong {
+            color: #f8fafc;
+            display: block;
+            font-size: 24px;
+            line-height: 1.15;
+            margin-bottom: 12px;
+          }
+          .summary-card p {
+            color: #cbd5e1;
+            font-size: 14px;
+            line-height: 1.42;
             margin: 0;
           }
           .card {
@@ -2002,20 +2091,79 @@ def _inject_styles() -> None:
           }
           div[data-testid="stTabs"] button {
             font-weight: 700;
+            white-space: nowrap;
+          }
+          div[data-testid="stTabs"] [role="tablist"] {
+            overflow-x: auto;
           }
           h3, h4 {
             color: #f8fafc;
           }
           @media (max-width: 900px) {
+            .block-container {
+              padding-left: 0.9rem;
+              padding-right: 0.9rem;
+              padding-top: 1rem;
+            }
             .hero {
               display: block;
+              margin-bottom: 16px;
+              padding: 18px;
+            }
+            .hero h1 {
+              font-size: 32px;
+            }
+            .tagline {
+              font-size: 16px;
+            }
+            .hero-copy {
+              font-size: 13px;
             }
             .hero-badges {
               justify-content: flex-start;
               margin-top: 18px;
+              max-width: none;
             }
             .guide-strip {
               grid-template-columns: 1fr;
+            }
+            .summary-card,
+            .audit-panel,
+            .card {
+              min-height: 0;
+              padding: 14px;
+            }
+            .summary-card strong {
+              font-size: 20px;
+            }
+            .card p {
+              min-height: 0;
+            }
+            div[data-testid="stHorizontalBlock"] {
+              gap: 0.75rem;
+            }
+            div[data-testid="stMetric"] {
+              margin-bottom: 8px;
+            }
+            div[data-testid="stDataFrame"] {
+              overflow-x: auto;
+            }
+          }
+          @media (max-width: 520px) {
+            .hero h1 {
+              font-size: 28px;
+            }
+            .status-pill,
+            .pill {
+              font-size: 11px;
+            }
+            .summary-card span {
+              font-size: 11px;
+            }
+            .summary-card p,
+            .audit-panel p,
+            .card p {
+              font-size: 13px;
             }
           }
         </style>

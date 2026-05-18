@@ -1,0 +1,14 @@
+{
+  "name": "buyerlab-ai",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Node.js Passenger wrapper for the BuyerLab AI Streamlit app.",
+  "main": "passenger_app.js",
+  "scripts": {
+    "start": "node passenger_app.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {}
+}

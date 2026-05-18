@@ -32,7 +32,7 @@ def test_streamlit_mock_audit_renders_core_dashboard(monkeypatch):
 
     assert not app.exception
     assert [tab.label for tab in app.tabs] == [
-        "Rapor",
+        "1 Dakikalık Rapor",
         "Müşteri İtirazları",
         "Dönüşüm Sürtünme Haritası",
         "Düzeltme Planı",

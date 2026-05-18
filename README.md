@@ -118,7 +118,7 @@ streamlit run app.py
 
 A cPanel upload package can be prepared as `dist/buyerlab-ai-cpanel.zip`.
 
-BuyerLab AI is a Streamlit app, so cPanel must support a long-running Python process or reverse proxy setup. Classic static/PHP-only cPanel hosting cannot run Streamlit directly. See `deployment/cpanel/README.md` for the exact upload notes.
+BuyerLab AI is a Streamlit app, so cPanel must support a long-running Python process, reverse proxy setup, or the included Node.js Passenger wrapper with a working Python command. Classic static/PHP-only cPanel hosting cannot run Streamlit directly. See `deployment/cpanel/README.md` for the exact upload notes.
 
 ## Environment Variables
 
