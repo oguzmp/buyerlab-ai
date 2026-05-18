@@ -31,7 +31,7 @@ def test_streamlit_mock_audit_renders_core_dashboard(monkeypatch):
     app = AppTest.from_file("app.py")
     app.run(timeout=10)
     _button(app, "Örneği yükle").click().run(timeout=10)
-    _button(app, "Yayın Öncesi Denetimi Çalıştır").click().run(timeout=30)
+    _button(app, "Ürün Sayfasını Test Et").click().run(timeout=30)
 
     assert not app.exception
     assert [tab.label for tab in app.tabs] == [

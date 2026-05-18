@@ -252,10 +252,10 @@ def _mock_agent_response(product: ProductInput, persona: BuyerPersona) -> AgentR
             confidence=84 if decision == "reject" else 66,
             purchase_intent=24 if decision == "reject" else 48,
             main_reason=(
-                f"{product_name} lacks category-critical proof: "
-                f"{', '.join(objections[:3]) or 'specific product evidence'}."
+                f"{product_name} için kategori-kritik kanıtlar eksik: "
+                f"{', '.join(objections[:3]) or 'somut ürün kanıtı'}."
             ),
-            objections=objections or ["Claims need more concrete proof"],
+            objections=objections or ["Ürün iddiaları daha somut kanıt gerektiriyor"],
             missing_information=missing_fields[:3],
             suggested_fix=_category_fix(product, missing_fields),
         )
@@ -268,13 +268,13 @@ def _mock_agent_response(product: ProductInput, persona: BuyerPersona) -> AgentR
         if price_risk < 45 and not (price_gap and price_gap > 0):
             decision = "buy"
         value_reason = (
-            f"{price_report.price:g} {price_report.currency} needs clearer value proof "
-            f"for the {price_report.price_band} band."
+            f"{price_report.price:g} {price_report.currency} fiyatı, "
+            f"{price_report.price_band} bandı için daha net değer kanıtı gerektiriyor."
         )
         if price_gap and price_gap > 0:
             value_reason = (
-                f"{product_name} is {price_gap:g} {price_report.currency} above "
-                f"{competitor_name}; the page must prove the difference."
+                f"{product_name}, {competitor_name} ürününden {price_gap:g} "
+                f"{price_report.currency} daha pahalı; sayfa bu farkı kanıtlamalı."
             )
         return AgentResponse(
             persona_id=persona.id,
@@ -287,9 +287,9 @@ def _mock_agent_response(product: ProductInput, persona: BuyerPersona) -> AgentR
                 competitor_gap.required_proofs_to_win[:2],
                 limit=3,
             )
-            or ["Price proof is not clear enough"],
+            or ["Fiyat kanıtı yeterince net değil"],
             missing_information=price_report.required_value_proofs[:3],
-            suggested_fix="Defend the price with concrete proof, total cost clarity, and competitor comparison.",
+            suggested_fix="Fiyatı somut kanıt, toplam maliyet netliği ve rakip karşılaştırmasıyla savun.",
         )
 
     if persona.id == "impulsive_buyer":
@@ -304,13 +304,13 @@ def _mock_agent_response(product: ProductInput, persona: BuyerPersona) -> AgentR
             confidence=70,
             purchase_intent=purchase_intent,
             main_reason=(
-                f"{product_name} has a clearer emotional hook and CTA."
+                f"{product_name} daha net bir duygusal çekim ve CTA sunuyor."
                 if decision == "buy"
-                else f"{product_name} does not create enough instant desire or visual confidence."
+                else f"{product_name} yeterli anlık istek veya görsel güven oluşturmuyor."
             ),
-            objections=["Emotional appeal is weak"] if decision != "buy" else [],
-            missing_information=[] if decision == "buy" else ["Stronger visual promise", "Sharper CTA"],
-            suggested_fix="Make the first screen more concrete, visual, and desire-led without exaggerating claims.",
+            objections=["Duygusal çekicilik zayıf"] if decision != "buy" else [],
+            missing_information=[] if decision == "buy" else ["Daha güçlü görsel vaat", "Daha net CTA"],
+            suggested_fix="İlk ekranı iddiaları abartmadan daha somut, görsel ve istek uyandıran hale getir.",
         )
 
     decision = "reject" if trust_is_weak else "hesitate"
@@ -322,17 +322,17 @@ def _mock_agent_response(product: ProductInput, persona: BuyerPersona) -> AgentR
         confidence=86 if decision == "reject" else 72,
         purchase_intent=22 if decision == "reject" else 52 if decision == "hesitate" else 76,
         main_reason=(
-            f"{product_name} does not yet show enough trust proof, warranty clarity, or social proof."
+            f"{product_name} henüz yeterli güven kanıtı, garanti netliği veya sosyal kanıt göstermiyor."
             if decision != "buy"
-            else f"{product_name} includes enough trust signals for a first simulated pass."
+            else f"{product_name} ilk simüle değerlendirme için yeterli güven sinyali içeriyor."
         ),
-        objections=["Weak trust proof", "Warranty or return policy needs clarity"]
+        objections=["Güven kanıtı zayıf", "Garanti veya iade politikası netleşmeli"]
         if decision != "buy"
         else [],
-        missing_information=["Real trust signals", "Warranty and support details"]
+        missing_information=["Gerçek güven sinyalleri", "Garanti ve destek detayları"]
         if decision != "buy"
         else [],
-        suggested_fix="Add real trust signals, exact warranty/return terms, support details, and proof assets.",
+        suggested_fix="Gerçek güven sinyalleri, net garanti/iade koşulları, destek bilgisi ve kanıt varlıkları ekle.",
     )
 
 
@@ -345,24 +345,24 @@ def _build_debate_message(
 ) -> str:
     """Create a short debate message from one persona's first-round decision."""
     market_signal = (
-        f"Group signal: {buy_count} buy, {reject_count} reject, "
-        f"{hesitation_count} hesitate."
+        f"Grup sinyali: {buy_count} satın alır, {reject_count} reddeder, "
+        f"{hesitation_count} kararsız."
     )
     reason = response.main_reason.rstrip(".")
 
     if response.decision == "buy":
         return (
-            f"I would buy {product.title}: {reason}. {market_signal} "
-            "Strengthen the strongest proof before launch."
+            f"{product.title} için satın alma eğilimindeyim: {reason}. {market_signal} "
+            "Yayına çıkmadan önce en güçlü kanıt görünür yapılmalı."
         )
     if response.decision == "reject":
         return (
-            f"I would reject {product.title}: {reason}. {market_signal} "
-            "This page needs clearer risk reduction."
+            f"{product.title} ürününü reddederim: {reason}. {market_signal} "
+            "Bu sayfa daha net risk azaltıcı bilgiler gerektiriyor."
         )
     return (
-        f"I would hesitate on {product.title}: {reason}. {market_signal} "
-        "Resolve the top objections before pushing traffic."
+        f"{product.title} için kararsız kalırım: {reason}. {market_signal} "
+        "Trafik göndermeden önce ana itirazlar çözülmeli."
     )
 
 
@@ -427,16 +427,16 @@ def _category_fix(product: ProductInput, missing_fields: list[str]) -> str:
     category = product.normalized_category or product.category
     missing_text = ", ".join(missing_fields[:4]) or "category-critical details"
     if "electronics" in category or "earbud" in product.product_type.lower():
-        return "Add battery life, warranty period, compatibility, technical specs, and real microphone or sound proof."
+        return "Pil süresi, garanti dönemi, uyumluluk, teknik özellikler ve gerçek mikrofon/ses kanıtı ekle."
     if "fashion_shoes" in category or "shoe" in product.product_type.lower():
-        return "Add size guide, fit notes, material details, exchange policy, and real product photos."
+        return "Beden rehberi, kalıp notları, materyal detayları, değişim politikası ve gerçek ürün fotoğrafları ekle."
     if "small_home_appliance" in category or "coffee" in product.product_type.lower():
-        return "Add warranty, technical specs, cleaning details, power/capacity info, and service terms."
+        return "Garanti, teknik özellikler, temizlik detayları, güç/kapasite bilgisi ve servis koşulları ekle."
     if "digital_service" in category or "service" in product.product_type.lower():
-        return "Add scope, delivery timeline, revision policy, portfolio proof, and support terms."
+        return "Kapsam, teslim süresi, revizyon politikası, portfolyo kanıtı ve destek koşulları ekle."
     if "online_course" in category or "course" in product.product_type.lower():
-        return "Add instructor proof, curriculum detail, learning outcomes, sample lesson, and refund terms if real."
-    return f"Add clear proof for: {missing_text}."
+        return "Eğitmen kanıtı, müfredat detayı, öğrenme çıktıları, örnek ders ve gerçekse iade koşulları ekle."
+    return f"Şunlar için net kanıt ekle: {missing_text}."
 
 
 def _purchase_intent_from_decision(decision: str) -> int:

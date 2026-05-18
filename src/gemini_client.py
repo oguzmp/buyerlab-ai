@@ -13,7 +13,7 @@ except ImportError:  # pragma: no cover - dependency is listed for local runs.
     load_dotenv = None
 
 
-DEFAULT_GEMINI_MODEL = "gemini-1.5-flash"
+DEFAULT_GEMINI_MODEL = "gemini-2.5-flash"
 MOCK_JSON_RESPONSE: dict[str, Any] = {
     "mock_mode": True,
     "decision": "hesitate",

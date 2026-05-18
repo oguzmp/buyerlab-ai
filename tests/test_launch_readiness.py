@@ -1,4 +1,5 @@
 from src.launch_readiness import (
+    analyze_brief_completeness,
     build_category_expectation_check,
     build_buyer_persona_verdicts,
     build_launch_readiness_report,
@@ -105,6 +106,44 @@ def test_category_expectation_check_uses_dashboard_ready_fields():
     assert rows
     assert {"field_name", "status", "impact", "explanation", "suggested_fix"} <= rows[0].keys()
     assert any(row["field_name"] == "student proof" for row in rows)
+
+
+def test_incomplete_optional_context_lowers_confidence_without_auto_rejecting():
+    product = ProductInput(
+        title="Daily Audio Buds",
+        product_type="Wireless earbuds",
+        category="electronics_accessory",
+        normalized_category="electronics_accessory",
+        price=799,
+        currency="TRY",
+        description="Wireless earbuds for daily music and online meetings.",
+        value_proposition="Simple daily audio with an accessible launch price.",
+    )
+    state = SimulationState(
+        product=product,
+        personas=get_default_personas(),
+        first_round_responses=[
+            AgentResponse(
+                persona_id="skeptic_buyer",
+                decision="hesitate",
+                confidence=70,
+                purchase_intent=50,
+                main_reason="Warranty and proof details are not clear yet.",
+                objections=["missing warranty detail"],
+                missing_information=["battery life"],
+                suggested_fix="Add exact warranty and battery life.",
+            )
+        ],
+    )
+
+    brief_quality = analyze_brief_completeness(product)
+    report = build_launch_readiness_report(state)
+
+    assert brief_quality["analysis_confidence_label"] == "orta"
+    assert report.launch_status == "needs_fixes"
+    assert report.brief_completeness_score >= 55
+    assert report.missing_information_not_product_failure
+    assert "ürünün kötü olduğunu değil" in report.brief_quality_summary
 
 
 def test_launch_status_thresholds_and_critical_blockers():

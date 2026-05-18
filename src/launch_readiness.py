@@ -56,6 +56,28 @@ HIGH_IMPACT_FIELDS = {
     "learning outcomes",
 }
 
+BRIEF_FIELD_WEIGHTS = [
+    ("Ürün başlığı", "title", "core", 12),
+    ("Ürün tipi", "product_type", "core", 10),
+    ("Kategori", "category", "core", 10),
+    ("Fiyat", "price", "core", 10),
+    ("Ürün açıklaması", "description", "core", 14),
+    ("Değer önerisi", "value_proposition", "core", 10),
+    ("Garanti / iade bilgisi", "warranty_or_return_policy", "evidence", 8),
+    ("Kargo / teslimat bilgisi", "shipping_info", "evidence", 5),
+    ("Güven veya kanıt", "trust_or_proof", "evidence", 8),
+    ("Kullanım amacı", "intended_use_case", "context", 5),
+    ("Marka veya model", "brand_or_model", "context", 4),
+    ("Satın alma çağrısı", "call_to_action", "content", 4),
+]
+
+OPTIONAL_CONTEXT_FIELDS = [
+    ("Rakip bağlamı", "competitor_context"),
+    ("Görsel notları", "image_notes"),
+    ("Bilinen sınırlamalar", "known_limitations"),
+    ("Kanıt varlıkları", "proof_assets"),
+]
+
 
 def build_launch_readiness_report(
     state: SimulationState,
@@ -71,6 +93,7 @@ def build_launch_readiness_report(
     price_report = price_report or analyze_local_price_perception(product)
     competitor_gap = competitor_gap or analyze_competitor_gap(product)
     category_check = build_category_expectation_check(product)
+    brief_quality = analyze_brief_completeness(product)
     persona_verdicts = build_buyer_persona_verdicts(responses, state.personas)
     simulated_conversion_score = _estimate_conversion_score(responses)
     risk_scores = risk_scores or _calculate_risk_scores(
@@ -103,6 +126,7 @@ def build_launch_readiness_report(
         price_report=price_report,
         competitor_gap=competitor_gap,
         buyer_persona_verdicts=persona_verdicts,
+        brief_quality=brief_quality,
     )
     launch_status = determine_launch_status(
         launch_readiness_score=launch_score,
@@ -112,6 +136,8 @@ def build_launch_readiness_report(
         category_expectation_check=category_check,
         price_report=price_report,
         competitor_gap=competitor_gap,
+        brief_completeness_score=brief_quality["brief_completeness_score"],
+        core_brief_missing_count=len(brief_quality["missing_core_fields"]),
     )
     main_blocker = blockers[0] if blockers else "No major blocker identified."
     buyer_loss_summary = _buyer_loss_summary(persona_verdicts)
@@ -123,6 +149,23 @@ def build_launch_readiness_report(
     )
     competitor_verdict = _competitor_gap_verdict(product, competitor_gap)
     launch_decision = _launch_decision_summary(launch_status, required_fixes)
+    missing_vs_weakness = split_missing_information_from_page_weaknesses(
+        product=product,
+        category_expectation_check=category_check,
+        price_report=price_report,
+        competitor_gap=competitor_gap,
+        agent_responses=responses,
+        brief_quality=brief_quality,
+    )
+    verdict_reasoning = build_verdict_reasoning(
+        launch_status=launch_status,
+        simulated_conversion_score=simulated_conversion_score,
+        launch_score=launch_score,
+        main_blocker=main_blocker,
+        price_report=price_report,
+        competitor_gap=competitor_gap,
+        brief_quality=brief_quality,
+    )
 
     return LaunchReadinessReport(
         launch_readiness_score=launch_score,
@@ -150,6 +193,17 @@ def build_launch_readiness_report(
         price_justification_verdict=price_verdict,
         competitor_gap_verdict=competitor_verdict,
         launch_decision_summary=launch_decision,
+        brief_completeness_score=brief_quality["brief_completeness_score"],
+        analysis_confidence_score=brief_quality["analysis_confidence_score"],
+        analysis_confidence_label=brief_quality["analysis_confidence_label"],
+        brief_quality_summary=brief_quality["brief_quality_summary"],
+        verdict_reasoning=verdict_reasoning,
+        missing_brief_fields=brief_quality["missing_core_fields"]
+        + brief_quality["missing_evidence_fields"],
+        optional_missing_fields=brief_quality["optional_missing_fields"],
+        missing_information_not_product_failure=missing_vs_weakness["missing_information"],
+        product_page_weaknesses=missing_vs_weakness["product_page_weaknesses"],
+        seller_questions=missing_vs_weakness["seller_questions"],
         summary=_summary(
             launch_status,
             launch_score,
@@ -173,6 +227,53 @@ def build_launch_readiness_summary(report_inputs: dict[str, Any]) -> dict[str, A
     return asdict(report)
 
 
+def analyze_brief_completeness(product: ProductInput) -> dict[str, Any]:
+    """Score whether the seller brief is sufficient for a fair AI-assisted audit."""
+    total_weight = sum(weight for *_rest, weight in BRIEF_FIELD_WEIGHTS)
+    earned_weight = 0
+    missing_core_fields: list[str] = []
+    missing_evidence_fields: list[str] = []
+    present_fields: list[str] = []
+
+    for label, field_name, group, weight in BRIEF_FIELD_WEIGHTS:
+        if _brief_field_is_present(product, field_name):
+            earned_weight += weight
+            present_fields.append(label)
+        elif group == "core":
+            missing_core_fields.append(label)
+        elif group == "evidence":
+            missing_evidence_fields.append(label)
+
+    optional_missing_fields = [
+        label
+        for label, field_name in OPTIONAL_CONTEXT_FIELDS
+        if not _brief_field_is_present(product, field_name)
+    ]
+    completeness_score = _safe_score(round((earned_weight / total_weight) * 100))
+    confidence_score = _safe_score(
+        completeness_score
+        - len(missing_core_fields) * 6
+        - min(12, len(missing_evidence_fields) * 3)
+    )
+    confidence_label = _confidence_label(confidence_score)
+
+    return {
+        "brief_completeness_score": completeness_score,
+        "analysis_confidence_score": confidence_score,
+        "analysis_confidence_label": confidence_label,
+        "brief_quality_summary": _brief_quality_summary(
+            confidence_label,
+            missing_core_fields,
+            missing_evidence_fields,
+            optional_missing_fields,
+        ),
+        "missing_core_fields": missing_core_fields,
+        "missing_evidence_fields": missing_evidence_fields,
+        "optional_missing_fields": optional_missing_fields,
+        "present_fields": present_fields,
+    }
+
+
 def calculate_launch_readiness_score(
     simulated_conversion_score: int,
     risk_scores: dict[str, int],
@@ -180,6 +281,7 @@ def calculate_launch_readiness_score(
     price_report: PricePerceptionReport,
     competitor_gap: CompetitorGapReport,
     buyer_persona_verdicts: list[dict[str, Any]],
+    brief_quality: dict[str, Any] | None = None,
 ) -> int:
     """Calculate a 0-100 AI-assisted diagnostic score, not a market prediction."""
     category_penalty = _category_penalty(category_expectation_check)
@@ -209,6 +311,17 @@ def calculate_launch_readiness_score(
     )
     if simulated_conversion_score >= 40:
         score = max(score, min(35, round(simulated_conversion_score * 0.35)))
+    brief_score = (brief_quality or {}).get("brief_completeness_score", 100)
+    if brief_score < 25:
+        score = min(score, 35)
+    elif brief_score < 55:
+        score = min(score, 62)
+    elif (
+        brief_quality
+        and not brief_quality.get("missing_core_fields")
+        and simulated_conversion_score >= 45
+    ):
+        score = max(score, 42)
     return _safe_score(score)
 
 
@@ -220,6 +333,8 @@ def determine_launch_status(
     category_expectation_check: list[dict[str, Any]] | None = None,
     price_report: PricePerceptionReport | None = None,
     competitor_gap: CompetitorGapReport | None = None,
+    brief_completeness_score: int = 100,
+    core_brief_missing_count: int = 0,
 ) -> str:
     """Determine launch status from thresholds and critical blocker overrides."""
     if launch_readiness_score >= 80:
@@ -230,6 +345,9 @@ def determine_launch_status(
         status = "not_ready"
 
     critical_missing = _critical_missing_count(category_expectation_check or [])
+    if brief_completeness_score < 25 or core_brief_missing_count >= 3:
+        return "not_ready"
+
     if status == "ready" and (
         trust_risk_score >= 65
         or critical_missing > 0
@@ -237,14 +355,15 @@ def determine_launch_status(
         or (competitor_gap is not None and _competitor_gap_is_unjustified(competitor_gap))
         or return_risk_score >= 60
         or simulated_conversion_score < 65
+        or brief_completeness_score < 70
     ):
         status = "needs_fixes"
 
     if (
         trust_risk_score >= 85
-        or critical_missing >= 3
+        or (critical_missing >= 3 and launch_readiness_score < 50)
         or return_risk_score >= 80
-        or simulated_conversion_score < 45
+        or simulated_conversion_score < 35
         or (price_report is not None and price_report.price_band == "irrational")
         or (
             competitor_gap is not None
@@ -253,6 +372,18 @@ def determine_launch_status(
         )
     ):
         status = "not_ready"
+
+    if (
+        status == "not_ready"
+        and 40 <= launch_readiness_score < 55
+        and 45 <= simulated_conversion_score
+        and 55 <= brief_completeness_score < 100
+        and core_brief_missing_count == 0
+        and trust_risk_score < 85
+        and return_risk_score < 80
+        and not (price_report is not None and price_report.price_band == "irrational")
+    ):
+        status = "needs_fixes"
 
     return status
 
@@ -435,6 +566,119 @@ def build_required_fix_list(
             _append_unique(fixes, _proof_to_fix(proof))
 
     return fixes[:7] or ["No required fix identified before launch."]
+
+
+def build_verdict_reasoning(
+    launch_status: str,
+    simulated_conversion_score: int,
+    launch_score: int,
+    main_blocker: str,
+    price_report: PricePerceptionReport,
+    competitor_gap: CompetitorGapReport,
+    brief_quality: dict[str, Any],
+) -> list[str]:
+    """Explain the launch verdict as a short decision chain."""
+    reasons = [
+        (
+            f"Yayın durumu {_status_label(launch_status)} çünkü yayına hazırlık skoru "
+            f"{launch_score}/100 ve simulated conversion score {simulated_conversion_score}/100."
+        ),
+        (
+            f"Analiz güveni {brief_quality['analysis_confidence_label']} "
+            f"({brief_quality['analysis_confidence_score']}/100); brief tamlığı "
+            f"{brief_quality['brief_completeness_score']}/100."
+        ),
+        f"Ana engel: {main_blocker}",
+    ]
+    if price_report.currency == "TRY":
+        reasons.append(
+            f"Yerel TL fiyat algısı: {price_report.price:g} TRY, {price_report.price_band} bandında ve değer riski {price_report.perceived_value_risk}/100."
+        )
+    if competitor_gap.price_gap is not None:
+        if competitor_gap.price_gap > 0:
+            reasons.append(
+                f"Rakip farkı: ürün rakipten {competitor_gap.price_gap:g} daha pahalı; fark kanıtlanmalı."
+            )
+        elif competitor_gap.price_gap < 0:
+            reasons.append(
+                f"Rakip farkı: ürün rakipten {abs(competitor_gap.price_gap):g} daha ucuz; değer mesajı korunmalı."
+            )
+    else:
+        reasons.append("Rakip bilgisi girilmediği için rakibe göre fiyat konumlandırması sınırlı değerlendirildi.")
+    return reasons[:5]
+
+
+def split_missing_information_from_page_weaknesses(
+    product: ProductInput,
+    category_expectation_check: list[dict[str, Any]],
+    price_report: PricePerceptionReport,
+    competitor_gap: CompetitorGapReport,
+    agent_responses: list[AgentResponse],
+    brief_quality: dict[str, Any],
+) -> dict[str, list[str]]:
+    """Separate missing seller input from actual product-page weaknesses."""
+    missing_information: list[str] = []
+    product_page_weaknesses: list[str] = []
+    seller_questions: list[str] = []
+
+    for field_name in brief_quality.get("missing_core_fields", []):
+        _append_unique(
+            missing_information,
+            f"{field_name} girilmediği için analiz bu alanda sınırlı kaldı; bu tek başına ürünün kötü olduğu anlamına gelmez.",
+        )
+        _append_unique(seller_questions, f"{field_name} için net bilgi nedir?")
+
+    for field_name in brief_quality.get("missing_evidence_fields", []):
+        _append_unique(
+            missing_information,
+            f"{field_name} eksik olduğu için güven ve risk değerlendirmesi daha temkinli yapıldı.",
+        )
+
+    category_missing = [
+        row["field_name"]
+        for row in category_expectation_check
+        if row.get("status") in {"missing", "weak"} and row.get("impact") == "high"
+    ]
+    if category_missing:
+        _append_unique(
+            product_page_weaknesses,
+            "Kategori açısından kritik bilgiler zayıf: " + ", ".join(category_missing[:4]) + ".",
+        )
+        for field_name in category_missing[:3]:
+            _append_unique(seller_questions, f"{field_name} bilgisi ürün sayfasında nasıl kanıtlanabilir?")
+
+    if price_report.perceived_value_risk >= 60:
+        _append_unique(
+            product_page_weaknesses,
+            f"Fiyatı savunan değer kanıtı zayıf; {price_report.price_band} fiyat bandı için daha somut gerekçe gerekiyor.",
+        )
+        _append_unique(seller_questions, "Bu fiyatı haklı çıkaran ölçülebilir avantajlar neler?")
+
+    if competitor_gap.price_gap is not None and competitor_gap.price_gap > 0:
+        _append_unique(
+            product_page_weaknesses,
+            "Rakibe göre fiyat farkı var, ancak farkı savunan karşılaştırma/proof yeterince net değil.",
+        )
+        _append_unique(seller_questions, "Rakibe göre fark hangi gerçek kanıtlarla gösterilebilir?")
+    elif product.competitor_context is None or not product.competitor_context.competitor_name:
+        _append_unique(
+            missing_information,
+            "Rakip bağlamı girilmedi; bu nedenle alternatiflere göre fiyat konumlandırması sınırlı değerlendirildi.",
+        )
+
+    for response in agent_responses:
+        if _safe_decision(_response_value(response, "decision")) == "buy":
+            continue
+        objection = _short_list(_response_value(response, "objections"), limit=1)
+        if objection:
+            _append_unique(product_page_weaknesses, objection[0])
+
+    return {
+        "missing_information": missing_information[:5],
+        "product_page_weaknesses": product_page_weaknesses[:5],
+        "seller_questions": seller_questions[:5]
+        or ["Bu ürünü satın aldıracak en güçlü kanıt nedir?"],
+    }
 
 
 def _calculate_risk_scores(
@@ -912,6 +1156,91 @@ def _coerce_competitor_gap(value: Any) -> CompetitorGapReport | None:
     return None
 
 
+def _brief_field_is_present(product: ProductInput, field_name: str) -> bool:
+    """Return whether a brief field has enough information to support analysis."""
+    if field_name == "title":
+        return bool(product.title.strip())
+    if field_name == "product_type":
+        return bool(product.product_type.strip())
+    if field_name == "category":
+        return bool((product.normalized_category or product.category).strip())
+    if field_name == "price":
+        return product.price > 0
+    if field_name == "description":
+        return len(product.description.strip()) >= 35
+    if field_name == "value_proposition":
+        return len(product.value_proposition.strip()) >= 20
+    if field_name == "warranty_or_return_policy":
+        return bool(product.warranty_or_return_policy.strip())
+    if field_name == "shipping_info":
+        return bool(product.shipping_info.strip())
+    if field_name == "trust_or_proof":
+        return bool(
+            product.trust_signals
+            or product.proof_assets
+            or product.reviews_or_social_proof.strip()
+        )
+    if field_name == "intended_use_case":
+        return bool(product.intended_use_case.strip())
+    if field_name == "brand_or_model":
+        return bool(product.brand.strip() or product.model.strip())
+    if field_name == "call_to_action":
+        return bool(product.call_to_action.strip())
+    if field_name == "competitor_context":
+        competitor = product.competitor_context
+        return bool(
+            competitor
+            and (
+                competitor.competitor_name
+                or competitor.competitor_price
+                or competitor.our_differentiator
+                or competitor.competitor_strengths
+            )
+        )
+    if field_name == "image_notes":
+        return bool((product.image_notes or "").strip())
+    if field_name == "known_limitations":
+        return bool(product.known_limitations)
+    if field_name == "proof_assets":
+        return bool(product.proof_assets)
+    return False
+
+
+def _confidence_label(score: int) -> str:
+    """Map an analysis confidence score into a compact label."""
+    if score >= 78:
+        return "yüksek"
+    if score >= 52:
+        return "orta"
+    return "düşük"
+
+
+def _brief_quality_summary(
+    confidence_label: str,
+    missing_core_fields: list[str],
+    missing_evidence_fields: list[str],
+    optional_missing_fields: list[str],
+) -> str:
+    """Explain how much the report should be trusted without blaming the product."""
+    if confidence_label == "yüksek":
+        return (
+            "Analiz güveni yüksek: ürün brief'i karar vermek için yeterli temel bilgiyi içeriyor. "
+            "Rapor daha çok ürün sayfasındaki gerçek dönüşüm engellerine odaklanır."
+        )
+
+    missing = missing_core_fields + missing_evidence_fields
+    missing_text = ", ".join(missing[:4]) or ", ".join(optional_missing_fields[:3])
+    if confidence_label == "orta":
+        return (
+            f"Analiz güveni orta: {missing_text} eksik veya zayıf. Bu sonuç ürünün kötü olduğunu değil, "
+            "ürün sayfasının satın alma kararını destekleyecek bazı bilgileri henüz vermediğini gösterir."
+        )
+    return (
+        f"Analiz güveni düşük: {missing_text or 'temel ürün bilgileri'} eksik. Bu aşamada karar, ürünün "
+        "kendisine değil, girilen brief'in ve ürün sayfası bilgisinin yetersizliğine daha çok dayanır."
+    )
+
+
 def _persona_name_from_id(persona_id: str) -> str:
     """Create a readable fallback persona name from an id."""
     if not persona_id or persona_id == "unknown_persona":
@@ -979,6 +1308,9 @@ __all__ = [
     "determine_launch_status",
     "build_category_expectation_check",
     "build_buyer_persona_verdicts",
+    "analyze_brief_completeness",
+    "build_verdict_reasoning",
+    "split_missing_information_from_page_weaknesses",
     "prioritize_conversion_blockers",
     "build_required_fix_list",
     "build_launch_readiness_report",

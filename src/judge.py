@@ -284,11 +284,25 @@ Return only valid JSON for this exact report schema:
   "price_justification_verdict": "",
   "competitor_gap_verdict": "",
   "launch_decision_summary": "",
+  "brief_completeness_score": 0,
+  "analysis_confidence_score": 0,
+  "analysis_confidence_label": "",
+  "brief_quality_summary": "",
+  "verdict_reasoning": [],
+  "missing_brief_fields": [],
+  "optional_missing_fields": [],
+  "missing_information_not_product_failure": [],
+  "product_page_weaknesses": [],
+  "seller_questions": [],
   "summary": ""
 }}
 
 Rules:
 - Write user-facing report text in Turkish for Turkish e-commerce sellers.
+- Separate missing seller input from actual product-page weakness.
+- Do not say the product is bad only because optional fields are empty.
+- If inputs are incomplete, explain that analysis confidence is lower.
+- Make the report answer: decision, why, what it means, and what to fix first.
 - Use the phrase "simulated conversion score" in the summary.
 - Do not claim the score is a real market prediction.
 - Keep all arrays to 5 short dashboard-ready items or fewer.
@@ -405,6 +419,46 @@ def _simulation_report_from_json(
             raw_report.get("required_price_proofs"),
             default=competitor_analysis["required_price_proofs"],
         ),
+        brief_completeness_score=_safe_score(
+            raw_report.get("brief_completeness_score"),
+            default=launch_readiness["brief_completeness_score"],
+        ),
+        analysis_confidence_score=_safe_score(
+            raw_report.get("analysis_confidence_score"),
+            default=launch_readiness["analysis_confidence_score"],
+        ),
+        analysis_confidence_label=_first_text(
+            raw_report.get("analysis_confidence_label"),
+            launch_readiness["analysis_confidence_label"],
+        ),
+        brief_quality_summary=_first_text(
+            raw_report.get("brief_quality_summary"),
+            launch_readiness["brief_quality_summary"],
+        ),
+        verdict_reasoning=_short_list(
+            raw_report.get("verdict_reasoning"),
+            default=launch_readiness["verdict_reasoning"],
+        ),
+        missing_brief_fields=_short_list(
+            raw_report.get("missing_brief_fields"),
+            default=launch_readiness["missing_brief_fields"],
+        ),
+        optional_missing_fields=_short_list(
+            raw_report.get("optional_missing_fields"),
+            default=launch_readiness["optional_missing_fields"],
+        ),
+        missing_information_not_product_failure=_short_list(
+            raw_report.get("missing_information_not_product_failure"),
+            default=launch_readiness["missing_information_not_product_failure"],
+        ),
+        product_page_weaknesses=_short_list(
+            raw_report.get("product_page_weaknesses"),
+            default=launch_readiness["product_page_weaknesses"],
+        ),
+        seller_questions=_short_list(
+            raw_report.get("seller_questions"),
+            default=launch_readiness["seller_questions"],
+        ),
         summary=_simulated_summary(
             _first_text(
                 raw_report.get("summary"),
@@ -455,6 +509,18 @@ def _fallback_report(state: SimulationState, error: Exception | None = None) -> 
         competitor_gap_verdict=launch_readiness["competitor_gap_verdict"],
         launch_decision_summary=launch_readiness["launch_decision_summary"],
         required_price_proofs=competitor_analysis["required_price_proofs"],
+        brief_completeness_score=launch_readiness["brief_completeness_score"],
+        analysis_confidence_score=launch_readiness["analysis_confidence_score"],
+        analysis_confidence_label=launch_readiness["analysis_confidence_label"],
+        brief_quality_summary=launch_readiness["brief_quality_summary"],
+        verdict_reasoning=launch_readiness["verdict_reasoning"],
+        missing_brief_fields=launch_readiness["missing_brief_fields"],
+        optional_missing_fields=launch_readiness["optional_missing_fields"],
+        missing_information_not_product_failure=launch_readiness[
+            "missing_information_not_product_failure"
+        ],
+        product_page_weaknesses=launch_readiness["product_page_weaknesses"],
+        seller_questions=launch_readiness["seller_questions"],
         summary=launch_readiness["summary"],
     )
 

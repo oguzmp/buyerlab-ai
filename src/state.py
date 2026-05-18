@@ -265,6 +265,16 @@ class LaunchReadinessReport:
     price_justification_verdict: str = ""
     competitor_gap_verdict: str = ""
     launch_decision_summary: str = ""
+    brief_completeness_score: int = 0
+    analysis_confidence_score: int = 0
+    analysis_confidence_label: str = "low"
+    brief_quality_summary: str = ""
+    verdict_reasoning: list[str] = field(default_factory=list)
+    missing_brief_fields: list[str] = field(default_factory=list)
+    optional_missing_fields: list[str] = field(default_factory=list)
+    missing_information_not_product_failure: list[str] = field(default_factory=list)
+    product_page_weaknesses: list[str] = field(default_factory=list)
+    seller_questions: list[str] = field(default_factory=list)
     summary: str = ""
 
     def __post_init__(self) -> None:
@@ -275,6 +285,8 @@ class LaunchReadinessReport:
         _validate_score("price_resistance_score", self.price_resistance_score)
         _validate_score("clarity_score", self.clarity_score)
         _validate_score("return_risk_score", self.return_risk_score)
+        _validate_score("brief_completeness_score", self.brief_completeness_score)
+        _validate_score("analysis_confidence_score", self.analysis_confidence_score)
 
 
 @dataclass(slots=True)
@@ -307,6 +319,16 @@ class SimulationReport:
     competitor_gap_verdict: str = ""
     launch_decision_summary: str = ""
     required_price_proofs: list[str] = field(default_factory=list)
+    brief_completeness_score: int = 0
+    analysis_confidence_score: int = 0
+    analysis_confidence_label: str = "low"
+    brief_quality_summary: str = ""
+    verdict_reasoning: list[str] = field(default_factory=list)
+    missing_brief_fields: list[str] = field(default_factory=list)
+    optional_missing_fields: list[str] = field(default_factory=list)
+    missing_information_not_product_failure: list[str] = field(default_factory=list)
+    product_page_weaknesses: list[str] = field(default_factory=list)
+    seller_questions: list[str] = field(default_factory=list)
     summary: str = ""
 
     def __post_init__(self) -> None:
@@ -317,6 +339,8 @@ class SimulationReport:
         _validate_score("price_resistance_score", self.price_resistance_score)
         _validate_score("clarity_score", self.clarity_score)
         _validate_score("return_risk_score", self.return_risk_score)
+        _validate_score("brief_completeness_score", self.brief_completeness_score)
+        _validate_score("analysis_confidence_score", self.analysis_confidence_score)
 
 
 @dataclass(slots=True)

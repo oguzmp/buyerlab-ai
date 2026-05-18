@@ -11,6 +11,7 @@ from typing import Any
 import streamlit as st
 
 from src.attention_map import generate_attention_map, get_section_priority_label
+from src.gemini_client import check_gemini_connection, generate_json
 from src.graph import run_simulation
 from src.judge import analyze_buyer_losses
 from src.launch_readiness import build_category_expectation_check
@@ -37,6 +38,7 @@ from src.state import (
 
 
 DATA_PATH = Path(__file__).parent / "data" / "sample_products.json"
+PRIMARY_SAMPLE_IDS = {"wireless-earbuds-demo", "online-course-demo"}
 
 LANGUAGE_OPTIONS = {"Türkçe": "tr", "English": "en"}
 
@@ -64,13 +66,26 @@ UI_TEXT = {
             "personas, category standards, local price perception, and "
             "competitor context."
         ),
-        "hero_disclaimer": "Scores are AI-simulated diagnostics, not real market predictions.",
-        "brief_wizard": "Product Brief Wizard",
-        "brief_help": "Prepare a structured product brief for a simulated buyer assessment.",
-        "sample_loader": "Quick Start Samples",
-        "sample_help": "Load a realistic demo case, then adjust the product brief.",
+        "hero_disclaimer": "AI-assisted pre-launch diagnostic, not a real sales prediction.",
+        "brief_wizard": "Demo and AI Status",
+        "brief_help": "Load a focused demo case or check whether Gemini is connected.",
+        "workspace_title": "Product Page Test Workspace",
+        "workspace_help": "Start with the essential product details. Competitor, proof, and trust fields are optional but make the audit sharper.",
+        "core_details": "Essential Product Brief",
+        "optional_details": "Optional details: trust, competitor, proof, and page content",
+        "sample_loader": "Demo Samples",
+        "sample_help": "Pick one strong demo case, then adjust it if needed.",
         "sample_product": "Sample product",
         "load_sample": "Load sample",
+        "run_jury_demo": "Run jury demo report",
+        "jury_demo_help": "Loads the wireless earbuds case and runs the full audit.",
+        "ai_status": "AI status",
+        "ai_test": "Test AI connection",
+        "ai_test_passed": "AI connection test passed.",
+        "ai_test_failed": "AI connection test failed:",
+        "ai_mode": "Mode",
+        "ai_model": "Model",
+        "decision_sources": "Decision sources",
         "identity": "A) Product Identity",
         "pricing": "B) Pricing and Market Context",
         "trust": "C) Proof and Trust",
@@ -100,14 +115,14 @@ UI_TEXT = {
         "social_proof": "Reviews or social proof",
         "cta": "Call to action",
         "image_notes": "Image notes",
-        "run": "Run Pre-launch Audit",
+        "run": "Test Product Page",
         "missing_title": "Add a product title before running the pre-launch audit.",
         "mock_on": "Mock mode active",
         "missing_key": (
             "Gemini is not connected. Add GEMINI_API_KEY or set "
             "BUYERLAB_MOCK_MODE=true for demo mode."
         ),
-        "key_detected": "Gemini connected",
+        "key_detected": "Gemini connected: live AI outputs will be used.",
         "empty_title": "Build a product brief, then run the audit",
         "empty_copy": (
             "The report will show launch readiness, buyer persona reactions, "
@@ -188,6 +203,13 @@ UI_TEXT = {
         "badge_price": "heuristic local price perception",
         "buyer_loss_summary": "Buyer Loss Summary",
         "launch_decision_summary": "Launch Decision Summary",
+        "brief_completeness": "Brief completeness",
+        "analysis_confidence": "Analysis confidence",
+        "report_meaning": "What this result means",
+        "why_verdict": "Why this verdict?",
+        "missing_info_context": "Missing information, not product failure",
+        "page_weaknesses": "Product page weaknesses",
+        "seller_questions": "Information that would strengthen the report",
         "price_justification_verdict": "Price Justification Verdict",
         "competitor_gap_verdict": "Competitor Gap Verdict",
         "competitor_positioning": "Competitor positioning",
@@ -196,6 +218,9 @@ UI_TEXT = {
         "missing_information_checklist": "Missing Information Checklist",
         "no_items": "No items provided.",
         "not_provided": "Not provided.",
+        "market_price_title": "Local TRY Price Perception",
+        "market_competitor_title": "Competitor Gap",
+        "flow_caption": "Product Brief -> AI Buyer Evaluation -> Launch Readiness Report -> Friction Map -> Fix Pack -> Before / After",
     },
     "tr": {
         "language": "Language / Dil",
@@ -203,18 +228,31 @@ UI_TEXT = {
         "tagline": "Ürününü yayına almadan önce AI müşterilerle test et.",
         "tagline_support": "Test your product with AI buyers before launch.",
         "hero_copy": (
-            "BuyerLab AI, ürün sayfalarını yayına çıkmadan önce yapay zeka "
-            "müşteri profilleriyle denetler. Sistem; müşteri itirazlarını, "
-            "güven eksiklerini, fiyat sürtünmesini, rakip farkını ve yayına "
-            "çıkmadan önce düzeltilmesi gereken noktaları raporlar."
+            "BuyerLab AI, ürün sayfalarını yapay zeka müşteri profilleriyle "
+            "denetler; müşteri itirazlarını, fiyat sürtünmesini, güven "
+            "eksiklerini, rakip farkını ve yayına çıkmadan önce düzeltilmesi "
+            "gereken noktaları raporlar."
         ),
-        "hero_disclaimer": "Bu skorlar AI destekli simülasyon çıktılarıdır; gerçek pazar tahmini veya gerçek A/B test sonucu değildir.",
-        "brief_wizard": "Ürün Brief Sihirbazı",
-        "brief_help": "Yayına çıkmadan önce denetlenecek ürün sayfası brief'ini hazırla.",
-        "sample_loader": "Hızlı Demo Örnekleri",
-        "sample_help": "Gerçekçi bir demo vakası yükle, sonra brief'i düzenle.",
+        "hero_disclaimer": "AI destekli yayın öncesi tanı aracıdır; gerçek satış tahmini değildir.",
+        "brief_wizard": "Demo ve AI Durumu",
+        "brief_help": "Odaklı bir demo yükle veya Gemini bağlantı durumunu kontrol et.",
+        "workspace_title": "Ürün Sayfası Test Alanı",
+        "workspace_help": "Önce temel ürün bilgilerini gir. Rakip, kanıt ve güven alanları opsiyoneldir; doldurulursa rapor daha keskin olur.",
+        "core_details": "Temel Ürün Brief'i",
+        "optional_details": "Opsiyonel detaylar: güven, rakip, kanıt ve sayfa içeriği",
+        "sample_loader": "Demo Örnekleri",
+        "sample_help": "Bir güçlü demo vakası seç, gerekiyorsa üzerinde değişiklik yap.",
         "sample_product": "Örnek ürün",
         "load_sample": "Örneği yükle",
+        "run_jury_demo": "Jüri Demo Raporunu Çalıştır",
+        "jury_demo_help": "Kablosuz kulaklık demosunu yükler ve tüm denetimi tek tıkla çalıştırır.",
+        "ai_status": "AI Durumu",
+        "ai_test": "AI Bağlantısını Test Et",
+        "ai_test_passed": "AI bağlantı testi başarılı.",
+        "ai_test_failed": "AI bağlantı testi başarısız:",
+        "ai_mode": "Mod",
+        "ai_model": "Model",
+        "decision_sources": "Karar Kaynakları",
         "identity": "A) Ürün Kimliği",
         "pricing": "B) Fiyat ve Pazar Bağlamı",
         "trust": "C) Güven ve Kanıtlar",
@@ -233,7 +271,7 @@ UI_TEXT = {
         "competitor_strengths": "Rakibin güçlü yönleri",
         "competitor_weaknesses": "Rakibin zayıf yönleri",
         "our_differentiator": "Bizim farkımız",
-        "warranty": "Garanti / iade politikasi",
+        "warranty": "Garanti / iade politikası",
         "shipping": "Kargo bilgisi",
         "trust_signals": "Güven sinyalleri",
         "proof_assets": "Kanıt varlıkları",
@@ -244,14 +282,14 @@ UI_TEXT = {
         "social_proof": "Yorumlar veya sosyal kanıt",
         "cta": "Satın alma çağrısı",
         "image_notes": "Görsel notları",
-        "run": "Yayın Öncesi Denetimi Çalıştır",
+        "run": "Ürün Sayfasını Test Et",
         "missing_title": "Denetimi çalıştırmadan önce ürün başlığı ekle.",
-        "mock_on": "Mock mod aktif",
+        "mock_on": "Mock mod aktif: Demo/test çıktıları kullanılıyor.",
         "missing_key": (
             "Gemini bağlı değil. GEMINI_API_KEY ekle veya demo için "
             "BUYERLAB_MOCK_MODE=true kullan."
         ),
-        "key_detected": "Gemini bağlı",
+        "key_detected": "Gemini bağlı: canlı AI çıktıları kullanılacak.",
         "empty_title": "Ürün brief'ini hazırla, sonra denetimi çalıştır",
         "empty_copy": (
             "Rapor; yayına hazırlık, AI müşteri profilleri, yerel TL fiyat algısı, "
@@ -279,7 +317,7 @@ UI_TEXT = {
         "suggested_fix": "Önerilen düzeltme",
         "no_objection": "Büyük itiraz yok.",
         "waiting": "Müşteri değerlendirmesi bekleniyor.",
-        "terminal": "Canlı Tartışma / Market Terminal",
+        "terminal": "Canlı Tartışma",
         "no_debate": "Henüz tartışma yok.",
         "buyer_loss": "Kaybedilen Müşteri Nedenleri",
         "market_note": "TL fiyat algısı, kategori bazlı sezgisel değerlendirme kullanır; döviz çevirisi veya canlı fiyat araştırması yapmaz.",
@@ -291,13 +329,13 @@ UI_TEXT = {
         "competitor_gap": "Rakip Farkı Analizi",
         "proofs_to_win": "Rakibe karşı kazanmak için gerekli kanıtlar",
         "expected_questions": "Beklenen müşteri soruları",
-        "no_competitor": "Rakip bağlamı girilmedi. Rakip analizi, kullanıcının girdiği rakip bilgilerine göre yapılır; gerçek zamanlı pazar verisi çekilmez.",
+        "no_competitor": "Rakip bağlamı girilmediği için alternatif ürünlere göre fiyat konumlandırması değerlendirilemedi.",
         "category_audit_note": "Kategori denetimi, sezgisel kategori profillerine göre yapılan AI destekli tanı kontrolüdür.",
         "required_field": "Gerekli bilgi alanı",
         "status": "Durum",
         "impact": "Etki",
         "explanation": "Açıklama",
-        "business_impact": "Business impact",
+        "business_impact": "İş etkisi",
         "attention_caption": "Bu analiz gerçek göz takibi değildir. AI müşteri profillerine göre simüle edilmiş dikkat ve sürtünme analizidir.",
         "section": "Bölüm",
         "attention": "Dikkat",
@@ -332,6 +370,13 @@ UI_TEXT = {
         "badge_price": "yerel TL fiyat algısı",
         "buyer_loss_summary": "Kaybedilen Müşteri Özeti",
         "launch_decision_summary": "Yayın Kararı Özeti",
+        "brief_completeness": "Brief Tamlığı",
+        "analysis_confidence": "Analiz Güveni",
+        "report_meaning": "Bu Sonuç Ne Anlama Geliyor?",
+        "why_verdict": "Bu Karar Neden Verildi?",
+        "missing_info_context": "Eksik Bilgi, Ürün Hatası Değil",
+        "page_weaknesses": "Ürün Sayfası Zayıflıkları",
+        "seller_questions": "Raporu Güçlendirecek Bilgiler",
         "price_justification_verdict": "Fiyat Gerekçesi Kararı",
         "competitor_gap_verdict": "Rakip Farkı Kararı",
         "competitor_positioning": "Rakibe göre konumlandırma",
@@ -340,6 +385,9 @@ UI_TEXT = {
         "missing_information_checklist": "Eksik Bilgi Kontrol Listesi",
         "no_items": "Öğe girilmedi.",
         "not_provided": "Bilgi girilmedi.",
+        "market_price_title": "Yerel TL Fiyat Algısı",
+        "market_competitor_title": "Rakip Farkı Analizi",
+        "flow_caption": "Product Brief → AI Müşteri Değerlendirmesi → Yayına Hazırlık Raporu → Sürtünme Haritası → Düzeltme Paketi → Önce / Sonra",
     },
 }
 
@@ -459,7 +507,10 @@ def main() -> None:
     results = st.session_state.get("results")
     if results:
         _render_dashboard(results)
+        st.divider()
+        _render_product_brief_workspace()
     else:
+        _render_product_brief_workspace()
         _render_empty_state()
 
 
@@ -567,6 +618,46 @@ REPORT_TRANSLATIONS = {
     "AI-assisted diagnostic score": "AI destekli tanı skoru",
     "AI-simulated buyer attention": "AI destekli müşteri dikkat analizi",
     "conversion friction": "dönüşüm sürtünmesi",
+    "lacks category-critical proof": "kategori için kritik kanıtları eksik",
+    "specific product evidence": "somut ürün kanıtı",
+    "Claims need more concrete proof": "İddialar daha somut kanıt gerektiriyor",
+    "needs clearer value proof for the": "şu fiyat bandı için daha net değer kanıtı gerektiriyor:",
+    "Defend the price with concrete proof, total cost clarity, and competitor comparison.": "Fiyatı somut kanıt, toplam maliyet netliği ve rakip karşılaştırmasıyla savun.",
+    "Price proof is not clear enough": "Fiyat kanıtı yeterince net değil",
+    "does not create enough instant desire or visual confidence.": "yeterli anlık istek veya görsel güven oluşturmuyor.",
+    "has a clearer emotional hook and CTA.": "daha net bir duygusal çekim ve CTA sunuyor.",
+    "Emotional appeal is weak": "Duygusal çekicilik zayıf",
+    "Stronger visual promise": "Daha güçlü görsel vaat",
+    "Sharper CTA": "Daha net CTA",
+    "Make the first screen more concrete, visual, and desire-led without exaggerating claims.": "İlk ekranı iddiaları abartmadan daha somut, görsel ve istek uyandıran hale getir.",
+    "does not yet show enough trust proof, warranty clarity, or social proof.": "henüz yeterli güven kanıtı, garanti netliği veya sosyal kanıt göstermiyor.",
+    "includes enough trust signals for a first simulated pass.": "ilk simüle değerlendirme için yeterli güven sinyali içeriyor.",
+    "Weak trust proof": "Güven kanıtı zayıf",
+    "Warranty or return policy needs clarity": "Garanti veya iade politikası netleşmeli",
+    "Real trust signals": "Gerçek güven sinyalleri",
+    "Warranty and support details": "Garanti ve destek detayları",
+    "Add real trust signals, exact warranty/return terms, support details, and proof assets.": "Gerçek güven sinyalleri, net garanti/iade koşulları, destek bilgisi ve kanıt varlıkları ekle.",
+    "Group signal": "Grup sinyali",
+    "battery life": "pil süresi",
+    "technical specifications": "teknik özellikler",
+    "compatibility": "uyumluluk",
+    "return policy": "iade politikası",
+    "real usage proof": "gerçek kullanım kanıtı",
+    "microphone or sound quality proof": "mikrofon veya ses kalitesi kanıtı",
+    "warranty": "garanti",
+    "size guide": "beden rehberi",
+    "fit information": "kalıp bilgisi",
+    "material": "materyal",
+    "real product photos": "gerçek ürün fotoğrafları",
+    "scope": "kapsam",
+    "delivery time": "teslim süresi",
+    "revision policy": "revizyon politikası",
+    "portfolio proof": "portfolyo kanıtı",
+    "support terms": "destek koşulları",
+    "instructor credibility": "eğitmen güvenilirliği",
+    "curriculum clarity": "müfredat netliği",
+    "learning outcomes": "öğrenme çıktıları",
+    "sample lesson/proof": "örnek ders/kanıt",
     "section lacks enough page content for simulated buyers.": "bölümünde simüle müşteriler için yeterli sayfa içeriği yok.",
     "Buyer feedback points to friction around": "Müşteri geri bildirimi şu bölümde sürtünmeye işaret ediyor:",
     "has limited simulated friction.": "sınırlı simüle sürtünme gösteriyor.",
@@ -607,7 +698,7 @@ def _translate_price_gap(text: str) -> str:
 
 
 def _render_sidebar() -> None:
-    """Render the product brief wizard and simulation action."""
+    """Render compact language, demo, and AI status controls."""
     language_names = list(LANGUAGE_OPTIONS)
     current_language = st.session_state.get("language", "Türkçe")
     if current_language not in language_names:
@@ -625,21 +716,6 @@ def _render_sidebar() -> None:
     st.sidebar.caption(_t("brief_help"))
 
     _render_sample_loader()
-    _render_product_identity_inputs()
-    _render_pricing_inputs()
-    _render_trust_inputs()
-    _render_content_inputs()
-
-    st.sidebar.divider()
-    run_clicked = st.sidebar.button(_t("run"), type="primary", width="stretch")
-    if run_clicked:
-        product = _product_from_inputs()
-        if not product.title:
-            st.session_state["last_error"] = _t("missing_title")
-            st.rerun()
-        _run_dashboard_simulation(product)
-        st.rerun()
-
     _render_environment_notice()
 
 
@@ -647,8 +723,9 @@ def _render_sample_loader() -> None:
     """Render a separate demo sample loader."""
     st.sidebar.markdown(f"### {_t('sample_loader')}")
     st.sidebar.caption(_t("sample_help"))
-    samples = load_sample_products()
-    sample_names = [sample.get("name", sample.get("title", "Sample")) for sample in samples]
+    all_samples = load_sample_products()
+    samples = [sample for sample in all_samples if sample.get("id") in PRIMARY_SAMPLE_IDS] or all_samples
+    sample_names = [_sample_display_name(sample) for sample in samples]
     if st.session_state.get("selected_sample") not in sample_names:
         st.session_state["selected_sample"] = sample_names[0]
     selected_sample = st.sidebar.selectbox(
@@ -662,74 +739,120 @@ def _render_sample_loader() -> None:
         _load_product_into_state(sample)
         st.session_state["last_error"] = ""
         st.rerun()
+    st.sidebar.caption(_t("jury_demo_help"))
+    if st.sidebar.button(_t("run_jury_demo"), type="primary", width="stretch"):
+        sample = _primary_demo_sample(all_samples)
+        _load_product_into_state(sample)
+        st.session_state["last_error"] = ""
+        product = _product_from_inputs()
+        _run_dashboard_simulation(product)
+        st.rerun()
     st.sidebar.divider()
 
 
-def _render_product_identity_inputs() -> None:
-    """Render product identity fields."""
-    st.sidebar.markdown(f"### {_t('identity')}")
-    st.sidebar.text_input(_t("brand"), key="brand")
-    st.sidebar.text_input(_t("model"), key="model")
-    st.sidebar.text_input(_t("product_type"), key="product_type")
-    _normalize_category_input()
-    st.sidebar.selectbox(
-        _t("category"),
-        CATEGORY_OPTIONS,
-        key="product_category",
-        format_func=_category_label,
-    )
-    _normalize_market_segment_input()
-    st.sidebar.selectbox(
-        _t("market_segment"),
-        MARKET_SEGMENTS,
-        key="market_segment",
-        format_func=_localized_label,
-    )
-    st.sidebar.text_area(_t("intended_use_case"), key="intended_use_case", height=70)
+def _primary_demo_sample(samples: list[dict[str, Any]]) -> dict[str, Any]:
+    """Return the strongest single-click demo case."""
+    for sample in samples:
+        if sample.get("id") == "wireless-earbuds-demo":
+            return sample
+    return samples[0] if samples else {}
 
 
-def _render_pricing_inputs() -> None:
-    """Render pricing and competitor context fields."""
-    st.sidebar.markdown(f"### {_t('pricing')}")
-    st.sidebar.number_input(_t("price"), min_value=0.0, step=1.0, key="product_price")
-    _normalize_currency_input()
-    st.sidebar.selectbox(
-        _t("currency"),
-        _currency_options(),
-        key="product_currency",
-    )
-    st.sidebar.text_input(_t("local_market"), key="local_market")
-    st.sidebar.text_input(_t("competitor_name"), key="competitor_name")
-    st.sidebar.number_input(
-        _t("competitor_price"),
-        min_value=0.0,
-        step=1.0,
-        key="competitor_price",
-    )
-    st.sidebar.text_area(_t("competitor_strengths"), key="competitor_strengths", height=70)
-    st.sidebar.text_area(_t("competitor_weaknesses"), key="competitor_weaknesses", height=70)
-    st.sidebar.text_area(_t("our_differentiator"), key="our_differentiator", height=70)
+def _sample_display_name(sample: dict[str, Any]) -> str:
+    """Return a focused, local demo label without exposing every test fixture."""
+    sample_id = sample.get("id", "")
+    if _language_code() == "tr":
+        labels = {
+            "wireless-earbuds-demo": "Kablosuz Kulaklık Demo",
+            "online-course-demo": "Online Kurs Demo",
+        }
+        if sample_id in labels:
+            return labels[sample_id]
+    return sample.get("name", sample.get("title", "Sample"))
 
 
-def _render_trust_inputs() -> None:
-    """Render proof, trust, and risk fields."""
-    st.sidebar.markdown(f"### {_t('trust')}")
-    st.sidebar.text_area(_t("warranty"), key="warranty_or_return_policy", height=75)
-    st.sidebar.text_area(_t("shipping"), key="shipping_info", height=75)
-    st.sidebar.text_area(_t("trust_signals"), key="trust_signals", height=85)
-    st.sidebar.text_area(_t("proof_assets"), key="proof_assets", height=85)
-    st.sidebar.text_area(_t("known_limitations"), key="known_limitations", height=85)
+def _render_product_brief_workspace() -> None:
+    """Render the main product test workspace instead of a long sidebar form."""
+    st.markdown(f"### {_t('workspace_title')}")
+    st.caption(_t("workspace_help"))
 
+    st.markdown(f"#### {_t('core_details')}")
+    left, right = st.columns([1.15, 0.85])
+    with left:
+        st.text_input(_t("product_title"), key="product_title")
+        st.text_area(_t("product_description"), key="product_description", height=115)
+        st.text_area(_t("value_proposition"), key="value_proposition", height=80)
+    with right:
+        st.text_input(_t("product_type"), key="product_type")
+        _normalize_category_input()
+        st.selectbox(
+            _t("category"),
+            CATEGORY_OPTIONS,
+            key="product_category",
+            format_func=_category_label,
+        )
+        price_col, currency_col = st.columns([1, 0.62])
+        with price_col:
+            st.number_input(_t("price"), min_value=0.0, step=1.0, key="product_price")
+        with currency_col:
+            _normalize_currency_input()
+            st.selectbox(_t("currency"), _currency_options(), key="product_currency")
+        st.text_area(_t("intended_use_case"), key="intended_use_case", height=80)
 
-def _render_content_inputs() -> None:
-    """Render product page content fields."""
-    st.sidebar.markdown(f"### {_t('content')}")
-    st.sidebar.text_input(_t("product_title"), key="product_title")
-    st.sidebar.text_area(_t("value_proposition"), key="value_proposition", height=85)
-    st.sidebar.text_area(_t("product_description"), key="product_description", height=120)
-    st.sidebar.text_area(_t("social_proof"), key="reviews_or_social_proof", height=75)
-    st.sidebar.text_input(_t("cta"), key="call_to_action")
-    st.sidebar.text_area(_t("image_notes"), key="image_notes", height=75)
+    with st.expander(_t("optional_details"), expanded=False):
+        identity_col, market_col = st.columns(2)
+        with identity_col:
+            st.markdown(f"##### {_t('identity')}")
+            st.text_input(_t("brand"), key="brand")
+            st.text_input(_t("model"), key="model")
+            _normalize_market_segment_input()
+            st.selectbox(
+                _t("market_segment"),
+                MARKET_SEGMENTS,
+                key="market_segment",
+                format_func=_localized_label,
+            )
+            st.text_input(_t("local_market"), key="local_market")
+        with market_col:
+            st.markdown(f"##### {_t('pricing')}")
+            st.text_input(_t("competitor_name"), key="competitor_name")
+            st.number_input(
+                _t("competitor_price"),
+                min_value=0.0,
+                step=1.0,
+                key="competitor_price",
+            )
+            st.text_area(_t("competitor_strengths"), key="competitor_strengths", height=75)
+            st.text_area(_t("competitor_weaknesses"), key="competitor_weaknesses", height=75)
+            st.text_area(_t("our_differentiator"), key="our_differentiator", height=75)
+
+        trust_col, content_col = st.columns(2)
+        with trust_col:
+            st.markdown(f"##### {_t('trust')}")
+            st.text_area(_t("warranty"), key="warranty_or_return_policy", height=75)
+            st.text_area(_t("shipping"), key="shipping_info", height=75)
+            st.text_area(_t("trust_signals"), key="trust_signals", height=75)
+            st.text_area(_t("proof_assets"), key="proof_assets", height=75)
+            st.text_area(_t("known_limitations"), key="known_limitations", height=75)
+        with content_col:
+            st.markdown(f"##### {_t('content')}")
+            st.text_area(_t("social_proof"), key="reviews_or_social_proof", height=75)
+            st.text_input(_t("cta"), key="call_to_action")
+            st.text_area(_t("image_notes"), key="image_notes", height=75)
+
+    action_col, caption_col = st.columns([0.32, 0.68])
+    with action_col:
+        run_clicked = st.button(_t("run"), type="primary", width="stretch")
+    with caption_col:
+        st.caption(_t("flow_caption"))
+
+    if run_clicked:
+        product = _product_from_inputs()
+        if not product.title:
+            st.session_state["last_error"] = _t("missing_title")
+            st.rerun()
+        _run_dashboard_simulation(product)
+        st.rerun()
 
 
 def _render_header() -> None:
@@ -777,6 +900,7 @@ def _render_empty_state() -> None:
         """,
         unsafe_allow_html=True,
     )
+    st.caption(_t("flow_caption"))
     _render_persona_cards([])
 
 
@@ -828,11 +952,47 @@ def _render_launch_readiness(
         st.info(_t("judge_missing"))
         return
 
+    decision = final_report.launch_decision_summary or final_report.executive_verdict or final_report.summary
+    first_fix = (final_report.required_fix_before_launch or final_report.next_best_actions or [""])[0]
+    decision_cols = st.columns(3)
+    with decision_cols[0]:
+        _audit_panel(_t("launch_decision_summary"), decision)
+    with decision_cols[1]:
+        _audit_panel(_t("main_blocker"), final_report.main_blocker or final_report.summary)
+    with decision_cols[2]:
+        _audit_panel(_t("required_fixes"), first_fix)
+
     cols = st.columns(4)
     cols[0].metric(_t("launch_score"), final_report.launch_readiness_score)
     cols[1].metric(_t("launch_status"), _localized_label(final_report.launch_status))
     cols[2].metric(_t("simulated_score"), comparison["before_score"])
     cols[3].metric(_t("main_blocker"), _short_metric(final_report.main_blocker))
+
+    confidence_cols = st.columns(2)
+    confidence_cols[0].metric(_t("brief_completeness"), f"{final_report.brief_completeness_score}/100")
+    confidence_cols[1].metric(
+        _t("analysis_confidence"),
+        f"{_localized_label(final_report.analysis_confidence_label)} ({final_report.analysis_confidence_score}/100)",
+    )
+    _audit_panel(_t("report_meaning"), final_report.brief_quality_summary or final_report.summary)
+
+    if final_report.verdict_reasoning:
+        st.markdown(f"#### {_t('why_verdict')}")
+        _render_list(final_report.verdict_reasoning)
+
+    st.markdown(f"#### {_t('decision_sources')}")
+    _render_pills(_decision_sources(final_report))
+
+    missing_col, weakness_col = st.columns(2)
+    with missing_col:
+        st.markdown(f"#### {_t('missing_info_context')}")
+        _render_list(
+            final_report.missing_information_not_product_failure
+            or final_report.missing_brief_fields
+        )
+    with weakness_col:
+        st.markdown(f"#### {_t('page_weaknesses')}")
+        _render_list(final_report.product_page_weaknesses or final_report.top_conversion_blockers)
 
     col1, col2 = st.columns([1, 1])
     with col1:
@@ -847,6 +1007,8 @@ def _render_launch_readiness(
         _render_list(final_report.next_best_actions or final_report.top_action_items)
         st.markdown(f"#### {_t('required_fixes')}")
         _render_list(final_report.required_fix_before_launch or final_report.top_conversion_blockers)
+        st.markdown(f"#### {_t('seller_questions')}")
+        _render_list(final_report.seller_questions)
 
     risk_cols = st.columns(4)
     risk_cols[0].metric("Güven Açığı" if _language_code() == "tr" else "Trust Gap", final_report.trust_risk_score)
@@ -946,6 +1108,7 @@ def _render_market_context(state: SimulationState) -> None:
     price_report = analyze_local_price_perception(product)
     competitor_gap = analyze_competitor_gap(product)
 
+    st.markdown(f"### {_t('market_price_title')}")
     st.caption(_t("market_note"))
     cols = st.columns(4)
     cols[0].metric(_t("local_market"), price_report.local_market)
@@ -970,6 +1133,7 @@ def _render_market_context(state: SimulationState) -> None:
         _render_list(price_report.expected_customer_questions)
 
     with col2:
+        st.markdown(f"### {_t('market_competitor_title')}")
         if _has_competitor_context(product.competitor_context):
             _audit_panel(
                 _t("competitor_gap_verdict"),
@@ -1340,16 +1504,42 @@ def _currency_options() -> list[str]:
 
 def _render_environment_notice() -> None:
     """Show a compact API and mock mode status at the end of the wizard."""
-    st.sidebar.divider()
-    mock_mode = os.getenv("BUYERLAB_MOCK_MODE", "").strip().lower() == "true"
-    has_api_key = bool(os.getenv("GEMINI_API_KEY"))
+    st.sidebar.markdown(f"### {_t('ai_status')}")
+    status = check_gemini_connection()
+    status_message = status.get("message", "")
+    mode = status.get("mode", "live")
+    model = status.get("model", "")
 
-    if mock_mode:
+    if mode == "mock":
         st.sidebar.success(_t("mock_on"))
-    elif not has_api_key:
-        st.sidebar.warning(_t("missing_key"))
+    elif status.get("ok"):
+        st.sidebar.success(_t("key_detected"))
     else:
-        st.sidebar.caption(_t("key_detected"))
+        st.sidebar.warning(status_message or _t("missing_key"))
+
+    st.sidebar.caption(f"{_t('ai_mode')}: {mode} · {_t('ai_model')}: {model}")
+
+    if st.sidebar.button(_t("ai_test"), width="stretch"):
+        try:
+            result = generate_json(
+                'Return only valid JSON: {"ok": true, "message": "BuyerLab AI connection is ready"}'
+            )
+            st.session_state["ai_test_status"] = {
+                "ok": True,
+                "message": result.get("message", _t("ai_test_passed")),
+            }
+        except Exception as exc:
+            st.session_state["ai_test_status"] = {
+                "ok": False,
+                "message": f"{_t('ai_test_failed')} {str(exc).splitlines()[0]}",
+            }
+
+    ai_test_status = st.session_state.get("ai_test_status")
+    if ai_test_status:
+        if ai_test_status.get("ok"):
+            st.sidebar.success(ai_test_status.get("message", _t("ai_test_passed")))
+        else:
+            st.sidebar.error(ai_test_status.get("message", _t("ai_test_failed")))
 
 
 def _parse_list(raw_value: str, limit: int = 8) -> list[str]:
@@ -1424,6 +1614,34 @@ def _render_pills(values: list[str]) -> None:
         f"<span class='pill'>{_escape(_report_text(_display_label(value)))}</span>" for value in safe_values
     )
     st.markdown(f"<div class='pill-row'>{html}</div>", unsafe_allow_html=True)
+
+
+def _decision_sources(final_report: SimulationReport) -> list[str]:
+    """Return compact source labels for the launch readiness verdict."""
+    if _language_code() == "tr":
+        sources = [
+            "Ürün brief'i",
+            "AI müşteri profilleri",
+            "Kategori beklentileri",
+            "Yerel TL fiyat algısı",
+        ]
+        if final_report.competitor_gap_summary or final_report.competitor_gap_verdict:
+            sources.append("Kullanıcı rakip bilgisi")
+        if final_report.analysis_confidence_label:
+            sources.append(f"Analiz güveni: {final_report.analysis_confidence_label}")
+        return sources
+
+    sources = [
+        "Product brief",
+        "AI buyer personas",
+        "Category expectations",
+        "Local price perception",
+    ]
+    if final_report.competitor_gap_summary or final_report.competitor_gap_verdict:
+        sources.append("Seller-provided competitor context")
+    if final_report.analysis_confidence_label:
+        sources.append(f"Analysis confidence: {final_report.analysis_confidence_label}")
+    return sources
 
 
 def _audit_panel(title: str, body: str) -> None:
