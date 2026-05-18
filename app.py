@@ -20,16 +20,10 @@ from src.optimizer import (
     compare_before_after,
     generate_optimized_product,
 )
-from src.price_intelligence import (
-    analyze_competitor_gap,
-    analyze_local_price_perception,
-    normalize_category,
-    normalize_currency,
-)
+from src.price_intelligence import analyze_local_price_perception, normalize_category, normalize_currency
 from src.state import (
     AgentResponse,
     AttentionMapReport,
-    CompetitorContext,
     ProductInput,
     SimulationReport,
     SimulationState,
@@ -64,21 +58,21 @@ UI_TEXT = {
         "hero_copy": (
             "BuyerLab AI audits product pages before launch using AI buyer "
             "personas, category standards, local price perception, and "
-            "competitor context."
+            "launch readiness signals."
         ),
         "hero_disclaimer": "AI-assisted pre-launch diagnostic, not a real sales prediction.",
         "brief_wizard": "Demo and AI Status",
         "brief_help": "Load a focused demo case or check whether Gemini is connected.",
         "workspace_title": "Product Page Test Workspace",
-        "workspace_help": "Start with the essential product details. Competitor, proof, and trust fields are optional but make the audit sharper.",
+        "workspace_help": "Start with the essential product details. Proof, trust, and page content fields are optional but make the audit sharper.",
         "core_details": "Essential Product Brief",
-        "optional_details": "Optional details: trust, competitor, proof, and page content",
+        "optional_details": "Optional details: identity, trust, proof, and page content",
         "sample_loader": "Demo Samples",
         "sample_help": "Pick one strong demo case, then adjust it if needed.",
         "sample_product": "Sample product",
         "load_sample": "Load sample",
-        "run_jury_demo": "Run jury demo report",
-        "jury_demo_help": "Loads the wireless earbuds case and runs the full audit.",
+        "run_sample_report": "Run sample report",
+        "sample_report_help": "Loads the wireless earbuds case and runs the full audit.",
         "ai_status": "AI status",
         "ai_test": "Test AI connection",
         "ai_test_passed": "AI connection test passed.",
@@ -99,10 +93,6 @@ UI_TEXT = {
         "price": "Price",
         "currency": "Currency",
         "local_market": "Local market",
-        "competitor_name": "Competitor name",
-        "competitor_price": "Competitor price",
-        "competitor_strengths": "Competitor strengths",
-        "competitor_weaknesses": "Competitor weaknesses",
         "our_differentiator": "Our differentiator",
         "warranty": "Warranty / return policy",
         "shipping": "Shipping info",
@@ -160,9 +150,7 @@ UI_TEXT = {
         "pricing_comment": "Pricing comment",
         "price_positioning": "Suggested price positioning",
         "competitor_gap": "Competitor gap summary",
-        "proofs_to_win": "Required proofs to win against competitor",
         "expected_questions": "Expected customer questions",
-        "no_competitor": "Competitor context was not provided.",
         "category_audit_note": "Category checks use heuristic category profiles for pre-launch audit diagnostics.",
         "required_field": "Required information field",
         "status": "Status",
@@ -211,15 +199,11 @@ UI_TEXT = {
         "page_weaknesses": "Product page weaknesses",
         "seller_questions": "Information that would strengthen the report",
         "price_justification_verdict": "Price Justification Verdict",
-        "competitor_gap_verdict": "Competitor Gap Verdict",
-        "competitor_positioning": "Competitor positioning",
         "trust_proof_checklist": "Trust Proof Checklist",
-        "competitor_comparison": "Competitor Comparison Suggestion",
         "missing_information_checklist": "Missing Information Checklist",
         "no_items": "No items provided.",
         "not_provided": "Not provided.",
         "market_price_title": "Local TRY Price Perception",
-        "market_competitor_title": "Competitor Gap",
         "flow_caption": "Product Brief -> AI Buyer Evaluation -> Launch Readiness Report -> Friction Map -> Fix Pack -> Before / After",
     },
     "tr": {
@@ -230,22 +214,22 @@ UI_TEXT = {
         "hero_copy": (
             "BuyerLab AI, ürün sayfalarını yapay zeka müşteri profilleriyle "
             "denetler; müşteri itirazlarını, fiyat sürtünmesini, güven "
-            "eksiklerini, rakip farkını ve yayına çıkmadan önce düzeltilmesi "
+            "eksiklerini, fiyat algısını ve yayına çıkmadan önce düzeltilmesi "
             "gereken noktaları raporlar."
         ),
         "hero_disclaimer": "AI destekli yayın öncesi tanı aracıdır; gerçek satış tahmini değildir.",
         "brief_wizard": "Demo ve AI Durumu",
         "brief_help": "Odaklı bir demo yükle veya Gemini bağlantı durumunu kontrol et.",
         "workspace_title": "Ürün Sayfası Test Alanı",
-        "workspace_help": "Önce temel ürün bilgilerini gir. Rakip, kanıt ve güven alanları opsiyoneldir; doldurulursa rapor daha keskin olur.",
+        "workspace_help": "Önce temel ürün bilgilerini gir. Kanıt, güven ve sayfa içeriği alanları opsiyoneldir; doldurulursa rapor daha keskin olur.",
         "core_details": "Temel Ürün Brief'i",
-        "optional_details": "Opsiyonel detaylar: güven, rakip, kanıt ve sayfa içeriği",
+        "optional_details": "Opsiyonel detaylar: kimlik, güven, kanıt ve sayfa içeriği",
         "sample_loader": "Demo Örnekleri",
         "sample_help": "Bir güçlü demo vakası seç, gerekiyorsa üzerinde değişiklik yap.",
         "sample_product": "Örnek ürün",
         "load_sample": "Örneği yükle",
-        "run_jury_demo": "Jüri Demo Raporunu Çalıştır",
-        "jury_demo_help": "Kablosuz kulaklık demosunu yükler ve tüm denetimi tek tıkla çalıştırır.",
+        "run_sample_report": "Örnek Raporu Çalıştır",
+        "sample_report_help": "Kablosuz kulaklık örneğini yükler ve tüm denetimi tek tıkla çalıştırır.",
         "ai_status": "AI Durumu",
         "ai_test": "AI Bağlantısını Test Et",
         "ai_test_passed": "AI bağlantı testi başarılı.",
@@ -266,10 +250,6 @@ UI_TEXT = {
         "price": "Fiyat",
         "currency": "Para birimi",
         "local_market": "Yerel pazar",
-        "competitor_name": "Rakip adı",
-        "competitor_price": "Rakip fiyatı",
-        "competitor_strengths": "Rakibin güçlü yönleri",
-        "competitor_weaknesses": "Rakibin zayıf yönleri",
         "our_differentiator": "Bizim farkımız",
         "warranty": "Garanti / iade politikası",
         "shipping": "Kargo bilgisi",
@@ -327,9 +307,7 @@ UI_TEXT = {
         "pricing_comment": "Fiyat yorumu",
         "price_positioning": "Önerilen fiyat konumlandırması",
         "competitor_gap": "Rakip Farkı Analizi",
-        "proofs_to_win": "Rakibe karşı kazanmak için gerekli kanıtlar",
         "expected_questions": "Beklenen müşteri soruları",
-        "no_competitor": "Rakip bağlamı girilmediği için alternatif ürünlere göre fiyat konumlandırması değerlendirilemedi.",
         "category_audit_note": "Kategori denetimi, sezgisel kategori profillerine göre yapılan AI destekli tanı kontrolüdür.",
         "required_field": "Gerekli bilgi alanı",
         "status": "Durum",
@@ -378,15 +356,11 @@ UI_TEXT = {
         "page_weaknesses": "Ürün Sayfası Zayıflıkları",
         "seller_questions": "Raporu Güçlendirecek Bilgiler",
         "price_justification_verdict": "Fiyat Gerekçesi Kararı",
-        "competitor_gap_verdict": "Rakip Farkı Kararı",
-        "competitor_positioning": "Rakibe göre konumlandırma",
         "trust_proof_checklist": "Güven Kanıtı Kontrol Listesi",
-        "competitor_comparison": "Rakip Karşılaştırma Önerisi",
         "missing_information_checklist": "Eksik Bilgi Kontrol Listesi",
         "no_items": "Öğe girilmedi.",
         "not_provided": "Bilgi girilmedi.",
         "market_price_title": "Yerel TL Fiyat Algısı",
-        "market_competitor_title": "Rakip Farkı Analizi",
         "flow_caption": "Product Brief → AI Müşteri Değerlendirmesi → Yayına Hazırlık Raporu → Sürtünme Haritası → Düzeltme Paketi → Önce / Sonra",
     },
 }
@@ -739,8 +713,8 @@ def _render_sample_loader() -> None:
         _load_product_into_state(sample)
         st.session_state["last_error"] = ""
         st.rerun()
-    st.sidebar.caption(_t("jury_demo_help"))
-    if st.sidebar.button(_t("run_jury_demo"), type="primary", width="stretch"):
+    st.sidebar.caption(_t("sample_report_help"))
+    if st.sidebar.button(_t("run_sample_report"), type="primary", width="stretch"):
         sample = _primary_demo_sample(all_samples)
         _load_product_into_state(sample)
         st.session_state["last_error"] = ""
@@ -800,7 +774,7 @@ def _render_product_brief_workspace() -> None:
         st.text_area(_t("intended_use_case"), key="intended_use_case", height=80)
 
     with st.expander(_t("optional_details"), expanded=False):
-        identity_col, market_col = st.columns(2)
+        identity_col, trust_col = st.columns(2)
         with identity_col:
             st.markdown(f"##### {_t('identity')}")
             st.text_input(_t("brand"), key="brand")
@@ -813,20 +787,6 @@ def _render_product_brief_workspace() -> None:
                 format_func=_localized_label,
             )
             st.text_input(_t("local_market"), key="local_market")
-        with market_col:
-            st.markdown(f"##### {_t('pricing')}")
-            st.text_input(_t("competitor_name"), key="competitor_name")
-            st.number_input(
-                _t("competitor_price"),
-                min_value=0.0,
-                step=1.0,
-                key="competitor_price",
-            )
-            st.text_area(_t("competitor_strengths"), key="competitor_strengths", height=75)
-            st.text_area(_t("competitor_weaknesses"), key="competitor_weaknesses", height=75)
-            st.text_area(_t("our_differentiator"), key="our_differentiator", height=75)
-
-        trust_col, content_col = st.columns(2)
         with trust_col:
             st.markdown(f"##### {_t('trust')}")
             st.text_area(_t("warranty"), key="warranty_or_return_policy", height=75)
@@ -834,10 +794,14 @@ def _render_product_brief_workspace() -> None:
             st.text_area(_t("trust_signals"), key="trust_signals", height=75)
             st.text_area(_t("proof_assets"), key="proof_assets", height=75)
             st.text_area(_t("known_limitations"), key="known_limitations", height=75)
+
+        content_col, visual_col = st.columns(2)
         with content_col:
             st.markdown(f"##### {_t('content')}")
             st.text_area(_t("social_proof"), key="reviews_or_social_proof", height=75)
             st.text_input(_t("cta"), key="call_to_action")
+        with visual_col:
+            st.markdown("##### Sayfa notları" if _language_code() == "tr" else "##### Page notes")
             st.text_area(_t("image_notes"), key="image_notes", height=75)
 
     action_col, caption_col = st.columns([0.32, 0.68])
@@ -1102,11 +1066,10 @@ def _render_debate_terminal(state: SimulationState) -> None:
 
 
 def _render_market_context(state: SimulationState) -> None:
-    """Render local price perception and competitor context."""
+    """Render local price perception without requiring competitor context."""
     product = state.product
     final_report = state.final_report
     price_report = analyze_local_price_perception(product)
-    competitor_gap = analyze_competitor_gap(product)
 
     st.markdown(f"### {_t('market_price_title')}")
     st.caption(_t("market_note"))
@@ -1127,28 +1090,11 @@ def _render_market_context(state: SimulationState) -> None:
             ),
         )
         _audit_panel(_t("price_positioning"), price_report.suggested_price_positioning)
+    with col2:
         st.markdown(f"#### {_t('required_value_proofs')}")
         _render_pills(price_report.required_value_proofs or [_t("no_objection")])
         st.markdown(f"#### {_t('expected_questions')}")
         _render_list(price_report.expected_customer_questions)
-
-    with col2:
-        st.markdown(f"### {_t('market_competitor_title')}")
-        if _has_competitor_context(product.competitor_context):
-            _audit_panel(
-                _t("competitor_gap_verdict"),
-                (
-                    final_report.competitor_gap_verdict
-                    if final_report and final_report.competitor_gap_verdict
-                    else competitor_gap.value_gap_summary
-                ),
-            )
-            _audit_panel(_t("competitor_gap"), competitor_gap.value_gap_summary)
-            _audit_panel(_t("competitor_positioning"), competitor_gap.competitor_positioning_comment)
-            st.markdown(f"#### {_t('proofs_to_win')}")
-            _render_list(competitor_gap.required_proofs_to_win)
-        else:
-            st.info(_t("no_competitor"))
 
 
 def _render_category_audit(state: SimulationState) -> None:
@@ -1230,15 +1176,10 @@ def _render_optimization(suggestion: Any) -> None:
             st.markdown(f"#### {_t('trust_proof_checklist')}")
             _render_list(trust_checklist)
 
-    competitor_suggestion = getattr(suggestion, "competitor_comparison_suggestion", "")
     missing_checklist = getattr(suggestion, "missing_information_checklist", [])
-    if competitor_suggestion or missing_checklist:
-        col_comp, col_missing = st.columns([1, 1])
-        with col_comp:
-            _audit_panel(_t("competitor_comparison"), competitor_suggestion)
-        with col_missing:
-            st.markdown(f"#### {_t('missing_information_checklist')}")
-            _render_list(missing_checklist)
+    if missing_checklist:
+        st.markdown(f"#### {_t('missing_information_checklist')}")
+        _render_list(missing_checklist)
 
     col3, col4 = st.columns([1, 1])
     with col3:
@@ -1329,7 +1270,6 @@ def _product_from_inputs() -> ProductInput:
     """Create ProductInput from sidebar fields."""
     category = normalize_category(st.session_state["product_category"])
     currency = normalize_currency(st.session_state["product_currency"])
-    competitor_context = _competitor_from_inputs(currency)
     intended_use_case = st.session_state["intended_use_case"].strip()
 
     return ProductInput(
@@ -1353,44 +1293,14 @@ def _product_from_inputs() -> ProductInput:
         reviews_or_social_proof=st.session_state["reviews_or_social_proof"].strip(),
         call_to_action=st.session_state["call_to_action"].strip(),
         image_notes=st.session_state["image_notes"].strip() or None,
-        competitor_context=competitor_context,
+        competitor_context=None,
         proof_assets=_parse_list(st.session_state["proof_assets"], limit=8),
         known_limitations=_parse_list(st.session_state["known_limitations"], limit=8),
     )
 
 
-def _competitor_from_inputs(currency: str) -> CompetitorContext | None:
-    """Build optional competitor context from seller-provided fields."""
-    competitor_name = st.session_state["competitor_name"].strip()
-    competitor_price = float(st.session_state["competitor_price"] or 0.0)
-    competitor_strengths = _parse_list(st.session_state["competitor_strengths"], limit=6)
-    competitor_weaknesses = _parse_list(st.session_state["competitor_weaknesses"], limit=6)
-    our_differentiator = st.session_state["our_differentiator"].strip()
-
-    if not any(
-        [
-            competitor_name,
-            competitor_price > 0,
-            competitor_strengths,
-            competitor_weaknesses,
-            our_differentiator,
-        ]
-    ):
-        return None
-
-    return CompetitorContext(
-        competitor_name=competitor_name,
-        competitor_price=competitor_price if competitor_price > 0 else None,
-        competitor_currency=currency if currency != "UNKNOWN" else "TRY",
-        competitor_strengths=competitor_strengths,
-        competitor_weaknesses=competitor_weaknesses,
-        our_differentiator=our_differentiator,
-    )
-
-
 def _load_product_into_state(sample: dict[str, Any]) -> None:
     """Load sample product values into sidebar session state."""
-    competitor = sample.get("competitor_context") or {}
     st.session_state["brand"] = sample.get("brand", "")
     st.session_state["model"] = sample.get("model", "")
     st.session_state["product_type"] = sample.get("product_type", "")
@@ -1404,15 +1314,7 @@ def _load_product_into_state(sample: dict[str, Any]) -> None:
     st.session_state["product_price"] = float(sample.get("price", 0.0))
     st.session_state["product_currency"] = normalize_currency(sample.get("currency", "TRY"))
     st.session_state["local_market"] = sample.get("local_market", "") or "Türkiye"
-    st.session_state["competitor_name"] = competitor.get("competitor_name", "")
-    st.session_state["competitor_price"] = float(competitor.get("competitor_price") or 0.0)
-    st.session_state["competitor_strengths"] = "\n".join(
-        competitor.get("competitor_strengths", [])
-    )
-    st.session_state["competitor_weaknesses"] = "\n".join(
-        competitor.get("competitor_weaknesses", [])
-    )
-    st.session_state["our_differentiator"] = competitor.get("our_differentiator", "")
+    st.session_state["our_differentiator"] = ""
     st.session_state["warranty_or_return_policy"] = sample.get(
         "warranty_or_return_policy",
         "",
@@ -1443,10 +1345,6 @@ def _initialize_session_state() -> None:
         "product_price": 0.0,
         "product_currency": "TRY",
         "local_market": "Türkiye",
-        "competitor_name": "",
-        "competitor_price": 0.0,
-        "competitor_strengths": "",
-        "competitor_weaknesses": "",
         "our_differentiator": "",
         "warranty_or_return_policy": "",
         "shipping_info": "",
@@ -1552,21 +1450,6 @@ def _parse_list(raw_value: str, limit: int = 8) -> list[str]:
     return values[:limit]
 
 
-def _has_competitor_context(competitor: CompetitorContext | None) -> bool:
-    """Return True when seller-provided competitor context exists."""
-    if competitor is None:
-        return False
-    return any(
-        [
-            competitor.competitor_name,
-            competitor.competitor_price,
-            competitor.competitor_strengths,
-            competitor.competitor_weaknesses,
-            competitor.our_differentiator,
-        ]
-    )
-
-
 def _persona_verdicts_by_name(
     final_report: SimulationReport | None,
 ) -> dict[str, dict[str, Any]]:
@@ -1625,8 +1508,6 @@ def _decision_sources(final_report: SimulationReport) -> list[str]:
             "Kategori beklentileri",
             "Yerel TL fiyat algısı",
         ]
-        if final_report.competitor_gap_summary or final_report.competitor_gap_verdict:
-            sources.append("Kullanıcı rakip bilgisi")
         if final_report.analysis_confidence_label:
             sources.append(f"Analiz güveni: {final_report.analysis_confidence_label}")
         return sources
@@ -1637,8 +1518,6 @@ def _decision_sources(final_report: SimulationReport) -> list[str]:
         "Category expectations",
         "Local price perception",
     ]
-    if final_report.competitor_gap_summary or final_report.competitor_gap_verdict:
-        sources.append("Seller-provided competitor context")
     if final_report.analysis_confidence_label:
         sources.append(f"Analysis confidence: {final_report.analysis_confidence_label}")
     return sources
@@ -1706,6 +1585,15 @@ def _inject_styles() -> None:
           [data-testid="stSidebar"] h3 {
             margin-top: 18px;
             color: #f8fafc;
+          }
+          #MainMenu,
+          [data-testid="stToolbar"],
+          [data-testid="stDecoration"],
+          [data-testid="stStatusWidget"],
+          .stDeployButton {
+            display: none;
+            height: 0;
+            visibility: hidden;
           }
           .hero {
             align-items: flex-start;

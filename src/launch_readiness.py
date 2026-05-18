@@ -72,7 +72,6 @@ BRIEF_FIELD_WEIGHTS = [
 ]
 
 OPTIONAL_CONTEXT_FIELDS = [
-    ("Rakip bağlamı", "competitor_context"),
     ("Görsel notları", "image_notes"),
     ("Bilinen sınırlamalar", "known_limitations"),
     ("Kanıt varlıkları", "proof_assets"),
@@ -603,8 +602,6 @@ def build_verdict_reasoning(
             reasons.append(
                 f"Rakip farkı: ürün rakipten {abs(competitor_gap.price_gap):g} daha ucuz; değer mesajı korunmalı."
             )
-    else:
-        reasons.append("Rakip bilgisi girilmediği için rakibe göre fiyat konumlandırması sınırlı değerlendirildi.")
     return reasons[:5]
 
 
@@ -660,12 +657,6 @@ def split_missing_information_from_page_weaknesses(
             "Rakibe göre fiyat farkı var, ancak farkı savunan karşılaştırma/proof yeterince net değil.",
         )
         _append_unique(seller_questions, "Rakibe göre fark hangi gerçek kanıtlarla gösterilebilir?")
-    elif product.competitor_context is None or not product.competitor_context.competitor_name:
-        _append_unique(
-            missing_information,
-            "Rakip bağlamı girilmedi; bu nedenle alternatiflere göre fiyat konumlandırması sınırlı değerlendirildi.",
-        )
-
     for response in agent_responses:
         if _safe_decision(_response_value(response, "decision")) == "buy":
             continue

@@ -22,7 +22,7 @@ def test_streamlit_sample_loader_populates_product_brief(monkeypatch):
     assert _value(app.text_input, "Marka") == "SoundPeak"
     assert _value(app.text_input, "Model") == "AirBass X2"
     assert _value(app.number_input, "Fiyat") == 799.0
-    assert _value(app.text_input, "Rakip adı") == "TuneGo Lite Pro"
+    assert _value(app.text_input, "Ürün başlığı") == "SoundPeak AirBass X2 Wireless Earbuds"
 
 
 def test_streamlit_mock_audit_renders_core_dashboard(monkeypatch):
