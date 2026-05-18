@@ -33,6 +33,7 @@ from src.state import (
 
 DATA_PATH = Path(__file__).parent / "data" / "sample_products.json"
 PRIMARY_SAMPLE_IDS = {"wireless-earbuds-demo", "online-course-demo"}
+APP_STATE_VERSION = "2026-05-18-clean-seller-report-v3"
 
 LANGUAGE_OPTIONS = {"Türkçe": "tr", "English": "en"}
 
@@ -60,15 +61,23 @@ UI_TEXT = {
             "personas, category standards, local price perception, and "
             "launch readiness signals."
         ),
-        "hero_disclaimer": "AI-assisted pre-launch diagnostic, not a real sales prediction.",
-        "brief_wizard": "Demo and AI Status",
-        "brief_help": "Load a focused demo case or check whether Gemini is connected.",
-        "workspace_title": "Product Page Test Workspace",
-        "workspace_help": "Start with the essential product details. Proof, trust, and page content fields are optional but make the audit sharper.",
-        "core_details": "Essential Product Brief",
-        "optional_details": "Optional details: identity, trust, proof, and page content",
-        "sample_loader": "Demo Samples",
-        "sample_help": "Pick one strong demo case, then adjust it if needed.",
+        "hero_disclaimer": "Designed to find product-page weaknesses before launch.",
+        "brief_wizard": "Language and AI Status",
+        "brief_help": "Keep the setup simple: choose a language and confirm AI is connected.",
+        "workspace_title": "Test a product page in 3 minutes",
+        "workspace_help": "Enter the essentials. BuyerLab will still produce a useful report when optional proof or trust details are missing.",
+        "core_details": "Required for a quick audit",
+        "optional_details": "Optional: make the report sharper",
+        "input_mode": "Input mode",
+        "quick_mode": "Quick mode",
+        "advanced_mode": "Advanced mode",
+        "quick_mode_help": "Use only the fields needed for a fast product-page audit.",
+        "advanced_mode_help": "Add proof, trust, identity, and page details for a sharper report.",
+        "executive_report": "Executive Report",
+        "first_three_fixes": "First 3 fixes",
+        "expected_lift": "Expected simulated lift",
+        "sample_loader": "Ready examples",
+        "sample_help": "Use one polished example for a fast report.",
         "sample_product": "Sample product",
         "load_sample": "Load sample",
         "run_sample_report": "Run sample report",
@@ -110,14 +119,27 @@ UI_TEXT = {
         "mock_on": "Mock mode active",
         "missing_key": (
             "Gemini is not connected. Add GEMINI_API_KEY or set "
-            "BUYERLAB_MOCK_MODE=true for demo mode."
+            "BUYERLAB_MOCK_MODE=true for test mode."
         ),
         "key_detected": "Gemini connected: live AI outputs will be used.",
-        "empty_title": "Build a product brief, then run the audit",
+        "empty_title": "One input. One launch decision. One fix plan.",
         "empty_copy": (
             "The report will show launch readiness, buyer persona reactions, "
             "heuristic local price perception, conversion friction, and a practical fix pack."
         ),
+        "tab_report": "Report",
+        "tab_buyers_simple": "Buyer Objections",
+        "tab_fix_simple": "Fix Plan",
+        "audit_details": "Audit details",
+        "quick_demo_title": "Start with a ready example",
+        "quick_demo_help": "Run one of the two ready scenarios and get the report immediately.",
+        "run_primary_demo": "Run wireless earbuds (Demo)",
+        "run_secondary_demo": "Run online course (Demo)",
+        "agent_discussion_details": "AI buyer discussion details",
+        "three_step_1": "1. Describe the product",
+        "three_step_2": "2. Pick category and price",
+        "three_step_3": "3. Get the launch report",
+        "advanced_toggle": "Add optional proof and trust details",
         "tab_launch": "Launch Readiness",
         "tab_personas": "Buyer Personas",
         "tab_market": "Market Context",
@@ -217,15 +239,23 @@ UI_TEXT = {
             "eksiklerini, fiyat algısını ve yayına çıkmadan önce düzeltilmesi "
             "gereken noktaları raporlar."
         ),
-        "hero_disclaimer": "AI destekli yayın öncesi tanı aracıdır; gerçek satış tahmini değildir.",
-        "brief_wizard": "Demo ve AI Durumu",
-        "brief_help": "Odaklı bir demo yükle veya Gemini bağlantı durumunu kontrol et.",
-        "workspace_title": "Ürün Sayfası Test Alanı",
-        "workspace_help": "Önce temel ürün bilgilerini gir. Kanıt, güven ve sayfa içeriği alanları opsiyoneldir; doldurulursa rapor daha keskin olur.",
-        "core_details": "Temel Ürün Brief'i",
-        "optional_details": "Opsiyonel detaylar: kimlik, güven, kanıt ve sayfa içeriği",
-        "sample_loader": "Demo Örnekleri",
-        "sample_help": "Bir güçlü demo vakası seç, gerekiyorsa üzerinde değişiklik yap.",
+        "hero_disclaimer": "Yayına çıkmadan önce ürün sayfasındaki zayıf noktaları bulmak için tasarlandı.",
+        "brief_wizard": "Dil ve AI Durumu",
+        "brief_help": "Kurulum basit kalsın: dili seç ve AI bağlantısını kontrol et.",
+        "workspace_title": "Ürün sayfasını 3 dakikada test et",
+        "workspace_help": "Sadece temel bilgileri girmen yeterli. Kanıt veya güven detayları eksikse BuyerLab bunu ürün hatası gibi değil, sayfa eksikliği gibi raporlar.",
+        "core_details": "Hızlı denetim için gerekli alanlar",
+        "optional_details": "Opsiyonel: raporu daha keskinleştir",
+        "input_mode": "Giriş modu",
+        "quick_mode": "Hızlı mod",
+        "advanced_mode": "Gelişmiş mod",
+        "quick_mode_help": "Hızlı ürün sayfası denetimi için yalnızca temel alanları kullan.",
+        "advanced_mode_help": "Daha keskin rapor için kanıt, güven, kimlik ve sayfa detayları ekle.",
+        "executive_report": "Yönetici Raporu",
+        "first_three_fixes": "İlk 3 düzeltme",
+        "expected_lift": "Beklenen simüle iyileşme",
+        "sample_loader": "Hazır örnekler",
+        "sample_help": "Sade ve güçlü bir örnekle hızlıca rapor üret.",
         "sample_product": "Örnek ürün",
         "load_sample": "Örneği yükle",
         "run_sample_report": "Örnek Raporu Çalıştır",
@@ -264,17 +294,30 @@ UI_TEXT = {
         "image_notes": "Görsel notları",
         "run": "Ürün Sayfasını Test Et",
         "missing_title": "Denetimi çalıştırmadan önce ürün başlığı ekle.",
-        "mock_on": "Mock mod aktif: Demo/test çıktıları kullanılıyor.",
+        "mock_on": "Mock mod aktif: test çıktıları kullanılıyor.",
         "missing_key": (
-            "Gemini bağlı değil. GEMINI_API_KEY ekle veya demo için "
+            "Gemini bağlı değil. GEMINI_API_KEY ekle veya test için "
             "BUYERLAB_MOCK_MODE=true kullan."
         ),
         "key_detected": "Gemini bağlı: canlı AI çıktıları kullanılacak.",
-        "empty_title": "Ürün brief'ini hazırla, sonra denetimi çalıştır",
+        "empty_title": "Tek giriş. Net yayın kararı. Uygulanabilir düzeltme planı.",
         "empty_copy": (
             "Rapor; yayına hazırlık, AI müşteri profilleri, yerel TL fiyat algısı, "
             "dönüşüm sürtünmesi ve pratik düzeltme paketini gösterecek."
         ),
+        "tab_report": "Rapor",
+        "tab_buyers_simple": "Müşteri İtirazları",
+        "tab_fix_simple": "Düzeltme Planı",
+        "audit_details": "Analiz detayları",
+        "quick_demo_title": "Hazır örnekle başla",
+        "quick_demo_help": "İki hazır senaryodan birini çalıştır ve raporu hemen gör.",
+        "run_primary_demo": "Kablosuz Kulaklık (Demo) çalıştır",
+        "run_secondary_demo": "Online Kurs (Demo) çalıştır",
+        "agent_discussion_details": "AI müşteri tartışması detayları",
+        "three_step_1": "1. Ürünü anlat",
+        "three_step_2": "2. Kategori ve fiyatı seç",
+        "three_step_3": "3. Yayın raporunu al",
+        "advanced_toggle": "İsteğe bağlı kanıt ve güven detayları ekle",
         "tab_launch": "Yayına Hazırlık",
         "tab_personas": "AI Müşteri Profilleri",
         "tab_market": "Pazar Bağlamı",
@@ -460,12 +503,25 @@ SECTION_LABELS = {
     },
 }
 
+FIELD_KEY_LABELS_TR = {
+    "title": "başlık",
+    "price": "fiyat",
+    "hero_image": "ana görsel",
+    "description": "ürün açıklaması",
+    "value_proposition": "değer önerisi",
+    "warranty_or_return_policy": "garanti / iade",
+    "shipping_info": "kargo bilgisi",
+    "trust_signals": "güven sinyalleri",
+    "reviews_or_social_proof": "yorumlar / sosyal kanıt",
+    "call_to_action": "satın alma çağrısı",
+}
+
 
 def main() -> None:
     """Render the BuyerLab AI dashboard."""
     _load_env_for_indicator()
     st.set_page_config(
-        page_title="BuyerLab AI",
+        page_title="BuyerLab AI Demo",
         layout="wide",
         initial_sidebar_state="expanded",
     )
@@ -644,6 +700,44 @@ REPORT_TRANSLATIONS = {
     "Highest simulated friction remains in": "En yüksek simüle sürtünme şu bölümde kalıyor:",
     "Simulated conversion score improved after optimization; rerun with real page constraints before launch.": "Optimizasyon sonrası simüle dönüşüm skoru arttı; yayına çıkmadan önce gerçek sayfa koşullarıyla tekrar test et.",
     "Simulated conversion score was unchanged; focus on remaining buyer risks before another test.": "Simüle dönüşüm skoru değişmedi; yeni testten önce kalan müşteri risklerine odaklan.",
+    "Bargain Hunter evaluation failed.": "Fiyat Odaklı Müşteri değerlendirmesi temiz formatta gelmedi; BuyerLab güvenli yerel analiz kullandı.",
+    "Impulsive Buyer evaluation failed.": "Dürtüsel Müşteri değerlendirmesi temiz formatta gelmedi; BuyerLab güvenli yerel analiz kullandı.",
+    "Trust Seeker evaluation failed.": "Güven Arayan Müşteri değerlendirmesi temiz formatta gelmedi; BuyerLab güvenli yerel analiz kullandı.",
+    "Simulation error": "Teknik değerlendirme hatası",
+    "Retry this persona evaluation or enable BUYERLAB_MOCK_MODE=true.": "Bu teknik not kullanıcı raporundan gizlenmelidir.",
+    "Add verified customer reviews when available.": "Gerçek müşteri yorumu varsa ekle.",
+    "Show secure checkout and accepted payment methods.": "Güvenli ödeme ve kabul edilen ödeme yöntemlerini göster.",
+    "Link to real return, warranty, and support policies.": "Gerçek iade, garanti ve destek politikalarına bağlantı ver.",
+    "Add exact warranty duration and return conditions.": "Net garanti süresi ve iade koşullarını ekle.",
+    "Add real support channel and service policy.": "Gerçek destek kanalı ve servis politikasını göster.",
+    "Add real proof assets instead of generic quality claims.": "Genel kalite iddiaları yerine gerçek kanıt varlıkları ekle.",
+    "Why is this product worth the price?": "Bu ürün neden bu fiyatı hak ediyor?",
+    "What proof supports the price positioning?": "Fiyat konumlandırmasını hangi kanıt destekliyor?",
+    "Added stronger price and value justification.": "Fiyat ve değer gerekçesi güçlendirildi.",
+    "Focused the fix pack on required fixes before launch.": "Düzeltme paketi yayından önce gereken kritik maddelere odaklandı.",
+    "Battery life is not specified clearly": "Pil süresi net belirtilmemiş",
+    "Warranty is unclear": "Garanti net değil",
+    "No microphone test proof": "Mikrofon test kanıtı yok",
+    "No real trust signals": "Gerçek güven sinyali yok",
+    "Competitor has more social proof": "Rakip daha görünür sosyal kanıta sahip",
+    "No size guide": "Beden rehberi yok",
+    "Fit information is unclear": "Kalıp bilgisi net değil",
+    "Material details are weak": "Materyal detayları zayıf",
+    "Return/exchange policy is vague": "İade/değişim politikası belirsiz",
+    "Cleaning and maintenance details are missing": "Temizlik ve bakım detayları eksik",
+    "Project scope is unclear": "Proje kapsamı net değil",
+    "Revision policy is missing": "Revizyon politikası eksik",
+    "Delivery timeline is vague": "Teslim süresi belirsiz",
+    "Portfolio proof is weak": "Portfolyo kanıtı zayıf",
+    "Support terms are unclear": "Destek koşulları net değil",
+    "Learning outcomes are unclear": "Öğrenme çıktıları net değil",
+    "Refund policy is missing": "İade politikası eksik",
+    "No value proof": "Değer kanıtı yok",
+    "No trust proof": "Güven kanıtı yok",
+    "mid_range": "orta segment",
+    "upper_mid": "üst orta",
+    "premium": "premium",
+    "budget": "ekonomik",
 }
 
 
@@ -654,8 +748,10 @@ def _report_text(value: Any) -> str:
         return text
 
     text = _translate_price_gap(text)
+    text = _replace_raw_field_names(text)
     for english, turkish in sorted(REPORT_TRANSLATIONS.items(), key=lambda item: len(item[0]), reverse=True):
         text = text.replace(english, turkish)
+    text = _replace_raw_field_names(text)
     return text
 
 
@@ -669,6 +765,13 @@ def _translate_price_gap(text: str) -> str:
         f"{match.group('product')}, {match.group('competitor')} ürününden "
         f"{match.group('gap')} {match.group('currency')} daha pahalı; sayfa bu farkı kanıtlamalı."
     )
+
+
+def _replace_raw_field_names(text: str) -> str:
+    """Replace backend field keys with seller-friendly Turkish labels."""
+    for raw_key, label in FIELD_KEY_LABELS_TR.items():
+        text = re.sub(rf"\b{re.escape(raw_key)}\b", label, text)
+    return text
 
 
 def _render_sidebar() -> None:
@@ -689,7 +792,6 @@ def _render_sidebar() -> None:
     st.sidebar.markdown(f"## {_t('brief_wizard')}")
     st.sidebar.caption(_t("brief_help"))
 
-    _render_sample_loader()
     _render_environment_notice()
 
 
@@ -724,12 +826,47 @@ def _render_sample_loader() -> None:
     st.sidebar.divider()
 
 
+def _render_quick_demo_panel() -> None:
+    """Render one-click demo actions in the main workspace."""
+    samples = load_sample_products()
+    primary_sample = _sample_by_id(samples, "wireless-earbuds-demo")
+    secondary_sample = _sample_by_id(samples, "online-course-demo")
+    if not primary_sample:
+        return
+
+    st.markdown(f"#### {_t('quick_demo_title')}")
+    st.caption(_t("quick_demo_help"))
+    run_col, load_col = st.columns([1, 1])
+    with run_col:
+        if st.button(_t("run_primary_demo"), type="secondary", width="stretch"):
+            _load_product_into_state(primary_sample)
+            st.session_state["last_error"] = ""
+            product = _product_from_inputs()
+            _run_dashboard_simulation(product)
+            st.rerun()
+    with load_col:
+        if secondary_sample and st.button(_t("run_secondary_demo"), width="stretch"):
+            _load_product_into_state(secondary_sample)
+            st.session_state["last_error"] = ""
+            product = _product_from_inputs()
+            _run_dashboard_simulation(product)
+            st.rerun()
+
+
 def _primary_demo_sample(samples: list[dict[str, Any]]) -> dict[str, Any]:
     """Return the strongest single-click demo case."""
-    for sample in samples:
-        if sample.get("id") == "wireless-earbuds-demo":
-            return sample
+    sample = _sample_by_id(samples, "wireless-earbuds-demo")
+    if sample:
+        return sample
     return samples[0] if samples else {}
+
+
+def _sample_by_id(samples: list[dict[str, Any]], sample_id: str) -> dict[str, Any]:
+    """Find a sample product by id."""
+    for sample in samples:
+        if sample.get("id") == sample_id:
+            return sample
+    return {}
 
 
 def _sample_display_name(sample: dict[str, Any]) -> str:
@@ -737,18 +874,36 @@ def _sample_display_name(sample: dict[str, Any]) -> str:
     sample_id = sample.get("id", "")
     if _language_code() == "tr":
         labels = {
-            "wireless-earbuds-demo": "Kablosuz Kulaklık Demo",
-            "online-course-demo": "Online Kurs Demo",
+            "wireless-earbuds-demo": "Kablosuz Kulaklık (Demo)",
+            "online-course-demo": "Online Kurs (Demo)",
         }
         if sample_id in labels:
             return labels[sample_id]
     return sample.get("name", sample.get("title", "Sample"))
 
 
+def _input_mode_label(mode: str) -> str:
+    """Return localized labels for the quick/advanced input mode switch."""
+    return _t("advanced_mode") if mode == "advanced" else _t("quick_mode")
+
+
 def _render_product_brief_workspace() -> None:
     """Render the main product test workspace instead of a long sidebar form."""
     st.markdown(f"### {_t('workspace_title')}")
     st.caption(_t("workspace_help"))
+
+    _render_quick_demo_panel()
+
+    st.markdown(
+        f"""
+        <div class="guide-strip">
+          <span>{_escape(_t("three_step_1"))}</span>
+          <span>{_escape(_t("three_step_2"))}</span>
+          <span>{_escape(_t("three_step_3"))}</span>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
 
     st.markdown(f"#### {_t('core_details')}")
     left, right = st.columns([1.15, 0.85])
@@ -757,7 +912,6 @@ def _render_product_brief_workspace() -> None:
         st.text_area(_t("product_description"), key="product_description", height=115)
         st.text_area(_t("value_proposition"), key="value_proposition", height=80)
     with right:
-        st.text_input(_t("product_type"), key="product_type")
         _normalize_category_input()
         st.selectbox(
             _t("category"),
@@ -771,14 +925,15 @@ def _render_product_brief_workspace() -> None:
         with currency_col:
             _normalize_currency_input()
             st.selectbox(_t("currency"), _currency_options(), key="product_currency")
-        st.text_area(_t("intended_use_case"), key="intended_use_case", height=80)
 
-    with st.expander(_t("optional_details"), expanded=False):
+    with st.expander(_t("advanced_toggle"), expanded=False):
         identity_col, trust_col = st.columns(2)
         with identity_col:
             st.markdown(f"##### {_t('identity')}")
             st.text_input(_t("brand"), key="brand")
             st.text_input(_t("model"), key="model")
+            st.text_input(_t("product_type"), key="product_type")
+            st.text_area(_t("intended_use_case"), key="intended_use_case", height=70)
             _normalize_market_segment_input()
             st.selectbox(
                 _t("market_segment"),
@@ -789,20 +944,20 @@ def _render_product_brief_workspace() -> None:
             st.text_input(_t("local_market"), key="local_market")
         with trust_col:
             st.markdown(f"##### {_t('trust')}")
-            st.text_area(_t("warranty"), key="warranty_or_return_policy", height=75)
-            st.text_area(_t("shipping"), key="shipping_info", height=75)
-            st.text_area(_t("trust_signals"), key="trust_signals", height=75)
-            st.text_area(_t("proof_assets"), key="proof_assets", height=75)
-            st.text_area(_t("known_limitations"), key="known_limitations", height=75)
+            st.text_area(_t("warranty"), key="warranty_or_return_policy", height=70)
+            st.text_area(_t("shipping"), key="shipping_info", height=70)
+            st.text_area(_t("trust_signals"), key="trust_signals", height=70)
+            st.text_area(_t("proof_assets"), key="proof_assets", height=70)
+            st.text_area(_t("known_limitations"), key="known_limitations", height=70)
 
         content_col, visual_col = st.columns(2)
         with content_col:
             st.markdown(f"##### {_t('content')}")
-            st.text_area(_t("social_proof"), key="reviews_or_social_proof", height=75)
+            st.text_area(_t("social_proof"), key="reviews_or_social_proof", height=70)
             st.text_input(_t("cta"), key="call_to_action")
         with visual_col:
             st.markdown("##### Sayfa notları" if _language_code() == "tr" else "##### Page notes")
-            st.text_area(_t("image_notes"), key="image_notes", height=75)
+            st.text_area(_t("image_notes"), key="image_notes", height=70)
 
     action_col, caption_col = st.columns([0.32, 0.68])
     with action_col:
@@ -828,7 +983,7 @@ def _render_header() -> None:
         <section class="hero">
           <div class="hero-copy-block">
             <p class="eyebrow">{_escape(_t("app_eyebrow"))}</p>
-            <h1>BuyerLab AI</h1>
+            <h1>BuyerLab AI Demo</h1>
             <p class="tagline">{_escape(_t("tagline"))}</p>
             {_support_line(_t("tagline_support"))}
             <p class="hero-copy">{_escape(_t("hero_copy"))}</p>
@@ -879,31 +1034,29 @@ def _render_dashboard(results: dict[str, Any]) -> None:
 
     tabs = st.tabs(
         [
-            _t("tab_launch"),
-            _t("tab_personas"),
-            _t("tab_market"),
-            _t("tab_category"),
+            _t("tab_report"),
+            _t("tab_buyers_simple"),
             _t("tab_friction"),
-            _t("tab_fix"),
-            _t("tab_compare"),
+            _t("tab_fix_simple"),
         ]
     )
 
     with tabs[0]:
         _render_launch_readiness(before_state.final_report, comparison)
+        with st.expander(_t("audit_details"), expanded=False):
+            _render_market_context(before_state)
+            st.divider()
+            _render_category_audit(before_state)
     with tabs[1]:
         _render_persona_cards(before_state.first_round_responses, before_state.final_report)
         _render_buyer_loss_analysis(buyer_loss_analysis)
-        _render_debate_terminal(before_state)
+        with st.expander(_t("agent_discussion_details"), expanded=False):
+            _render_debate_terminal(before_state)
     with tabs[2]:
-        _render_market_context(before_state)
-    with tabs[3]:
-        _render_category_audit(before_state)
-    with tabs[4]:
         _render_attention_map(attention_map)
-    with tabs[5]:
+    with tabs[3]:
         _render_optimization(suggestion)
-    with tabs[6]:
+        st.divider()
         _render_before_after(comparison, after_state)
 
 
@@ -918,68 +1071,71 @@ def _render_launch_readiness(
 
     decision = final_report.launch_decision_summary or final_report.executive_verdict or final_report.summary
     first_fix = (final_report.required_fix_before_launch or final_report.next_best_actions or [""])[0]
-    decision_cols = st.columns(3)
-    with decision_cols[0]:
-        _audit_panel(_t("launch_decision_summary"), decision)
-    with decision_cols[1]:
-        _audit_panel(_t("main_blocker"), final_report.main_blocker or final_report.summary)
-    with decision_cols[2]:
-        _audit_panel(_t("required_fixes"), first_fix)
-
-    cols = st.columns(4)
-    cols[0].metric(_t("launch_score"), final_report.launch_readiness_score)
-    cols[1].metric(_t("launch_status"), _localized_label(final_report.launch_status))
-    cols[2].metric(_t("simulated_score"), comparison["before_score"])
-    cols[3].metric(_t("main_blocker"), _short_metric(final_report.main_blocker))
-
-    confidence_cols = st.columns(2)
-    confidence_cols[0].metric(_t("brief_completeness"), f"{final_report.brief_completeness_score}/100")
-    confidence_cols[1].metric(
-        _t("analysis_confidence"),
-        f"{_localized_label(final_report.analysis_confidence_label)} ({final_report.analysis_confidence_score}/100)",
-    )
-    _audit_panel(_t("report_meaning"), final_report.brief_quality_summary or final_report.summary)
-
-    if final_report.verdict_reasoning:
-        st.markdown(f"#### {_t('why_verdict')}")
-        _render_list(final_report.verdict_reasoning)
-
-    st.markdown(f"#### {_t('decision_sources')}")
-    _render_pills(_decision_sources(final_report))
-
-    missing_col, weakness_col = st.columns(2)
-    with missing_col:
-        st.markdown(f"#### {_t('missing_info_context')}")
-        _render_list(
-            final_report.missing_information_not_product_failure
-            or final_report.missing_brief_fields
-        )
-    with weakness_col:
-        st.markdown(f"#### {_t('page_weaknesses')}")
-        _render_list(final_report.product_page_weaknesses or final_report.top_conversion_blockers)
+    _render_executive_report(final_report, comparison, decision, first_fix)
 
     col1, col2 = st.columns([1, 1])
     with col1:
-        _audit_panel(_t("main_blocker"), final_report.main_blocker or final_report.summary)
-        _audit_panel(_t("executive_verdict"), final_report.executive_verdict or final_report.summary)
-        if final_report.buyer_loss_summary:
-            _audit_panel(_t("buyer_loss_summary"), final_report.buyer_loss_summary)
-        if final_report.launch_decision_summary:
-            _audit_panel(_t("launch_decision_summary"), final_report.launch_decision_summary)
+        st.markdown(f"#### {_t('required_fixes')}")
+        _render_list(final_report.required_fix_before_launch or final_report.top_conversion_blockers)
     with col2:
         st.markdown(f"#### {_t('next_actions')}")
         _render_list(final_report.next_best_actions or final_report.top_action_items)
-        st.markdown(f"#### {_t('required_fixes')}")
-        _render_list(final_report.required_fix_before_launch or final_report.top_conversion_blockers)
-        st.markdown(f"#### {_t('seller_questions')}")
-        _render_list(final_report.seller_questions)
 
     risk_cols = st.columns(4)
     risk_cols[0].metric("Güven Açığı" if _language_code() == "tr" else "Trust Gap", final_report.trust_risk_score)
     risk_cols[1].metric("Fiyat Gerekçesi Açığı" if _language_code() == "tr" else "Price Justification Gap", final_report.price_resistance_score)
     risk_cols[2].metric("Netlik" if _language_code() == "tr" else "Clarity", final_report.clarity_score)
     risk_cols[3].metric("İade Riski" if _language_code() == "tr" else "Return Risk", final_report.return_risk_score)
+
+    with st.expander(_t("why_verdict"), expanded=False):
+        _audit_panel(_t("report_meaning"), final_report.brief_quality_summary or final_report.summary)
+        if final_report.verdict_reasoning:
+            st.markdown(f"#### {_t('why_verdict')}")
+            _render_list(final_report.verdict_reasoning)
+        st.markdown(f"#### {_t('decision_sources')}")
+        _render_pills(_decision_sources(final_report))
+
+        missing_col, weakness_col = st.columns(2)
+        with missing_col:
+            st.markdown(f"#### {_t('missing_info_context')}")
+            _render_list(
+                final_report.missing_information_not_product_failure
+                or final_report.missing_brief_fields
+            )
+        with weakness_col:
+            st.markdown(f"#### {_t('page_weaknesses')}")
+            _render_list(final_report.product_page_weaknesses or final_report.top_conversion_blockers)
+        if final_report.buyer_loss_summary:
+            _audit_panel(_t("buyer_loss_summary"), final_report.buyer_loss_summary)
+        st.markdown(f"#### {_t('seller_questions')}")
+        _render_list(final_report.seller_questions)
+
     st.caption(_t("score_caption"))
+
+
+def _render_executive_report(
+    final_report: SimulationReport,
+    comparison: dict[str, Any],
+    decision: str,
+    first_fix: str,
+) -> None:
+    """Render a one-screen executive report for hackathon demos."""
+    st.markdown(f"### {_t('executive_report')}")
+    metric_cols = st.columns(5)
+    metric_cols[0].metric(_t("launch_status"), _localized_label(final_report.launch_status))
+    metric_cols[1].metric(_t("launch_score"), final_report.launch_readiness_score)
+    metric_cols[2].metric(_t("simulated_score"), comparison["before_score"])
+    metric_cols[3].metric(_t("analysis_confidence"), f"{final_report.analysis_confidence_score}/100")
+    metric_cols[4].metric(_t("expected_lift"), _expected_lift_value(comparison))
+
+    summary_col, fix_col = st.columns([1.15, 0.85])
+    with summary_col:
+        _audit_panel(_t("launch_decision_summary"), decision)
+        _audit_panel(_t("main_blocker"), final_report.main_blocker or final_report.summary)
+    with fix_col:
+        _audit_panel(_t("expected_lift"), _expected_lift_text(comparison))
+        st.markdown(f"#### {_t('first_three_fixes')}")
+        _render_list((final_report.required_fix_before_launch or [first_fix])[:3])
 
 
 def _render_persona_cards(
@@ -1032,18 +1188,24 @@ def _render_buyer_loss_analysis(buyer_loss_analysis: list[dict[str, Any]]) -> No
         st.info(_t("buyer_loss"))
         return
 
-    rows = [
-        {
-            "Persona": _persona_name(row.get("persona_name", row.get("persona_id", ""))),
-            _t("decision"): _localized_label(row.get("final_decision", "")),
-            _t("intent"): row.get("purchase_intent", 0),
-            _t("business_impact"): _localized_label(row.get("business_impact", "")),
-            _t("main_blocker"): _report_text(row.get("main_loss_reason", "")),
-            _t("suggested_fix"): _report_text(row.get("suggested_fix", "")),
-        }
-        for row in buyer_loss_analysis
-    ]
-    st.dataframe(rows, width="stretch", hide_index=True)
+    cols = st.columns(2)
+    for index, row in enumerate(buyer_loss_analysis[:4]):
+        persona = _persona_name(row.get("persona_name", row.get("persona_id", "")))
+        decision = _localized_label(row.get("final_decision", ""))
+        intent = row.get("purchase_intent", 0)
+        reason = _report_text(row.get("main_loss_reason", ""))
+        fix = _report_text(row.get("suggested_fix", ""))
+        impact = _localized_label(row.get("business_impact", ""))
+        with cols[index % 2]:
+            _audit_panel(
+                f"{persona} - {decision}",
+                (
+                    f"Satın alma niyeti: {intent}/100. "
+                    f"Ana neden: {reason or _t('not_provided')} "
+                    f"Öneri: {fix or _t('not_provided')} "
+                    f"İş etkisi: {impact or _t('not_provided')}."
+                ),
+            )
 
 
 def _render_debate_terminal(state: SimulationState) -> None:
@@ -1275,17 +1437,21 @@ def _product_from_inputs() -> ProductInput:
     return ProductInput(
         brand=st.session_state["brand"].strip(),
         model=st.session_state["model"].strip(),
-        product_type=st.session_state["product_type"].strip(),
+        product_type=(
+            st.session_state["product_type"].strip()
+            or st.session_state["product_title"].strip()
+            or _category_label(category)
+        ),
         title=st.session_state["product_title"].strip(),
         category=category,
         normalized_category=category,
         market_segment=st.session_state["market_segment"],
-        intended_use_case=intended_use_case,
+        intended_use_case=intended_use_case or st.session_state["value_proposition"].strip(),
         local_market=st.session_state["local_market"].strip() or "Türkiye",
         price=float(st.session_state["product_price"]),
         currency=currency if currency != "UNKNOWN" else "TRY",
         description=st.session_state["product_description"].strip(),
-        target_audience=intended_use_case,
+        target_audience=intended_use_case or st.session_state["value_proposition"].strip(),
         value_proposition=st.session_state["value_proposition"].strip(),
         warranty_or_return_policy=st.session_state["warranty_or_return_policy"].strip(),
         shipping_info=st.session_state["shipping_info"].strip(),
@@ -1333,9 +1499,16 @@ def _load_product_into_state(sample: dict[str, Any]) -> None:
 
 def _initialize_session_state() -> None:
     """Initialize product brief state once."""
+    if st.session_state.get("app_state_version") != APP_STATE_VERSION:
+        st.session_state.pop("results", None)
+        st.session_state.pop("ai_test_status", None)
+        st.session_state["last_error"] = ""
+        st.session_state["app_state_version"] = APP_STATE_VERSION
+
     defaults = {
         "language": "Türkçe",
         "selected_sample": "",
+        "input_mode": "quick",
         "brand": "",
         "model": "",
         "product_type": "",
@@ -1479,6 +1652,34 @@ def _short_metric(value: Any, limit: int = 34) -> str:
     if len(text) <= limit:
         return text
     return f"{text[: limit - 3].rstrip()}..."
+
+
+def _expected_lift_value(comparison: dict[str, Any]) -> str:
+    """Return compact before-after simulated score lift."""
+    delta = int(comparison.get("score_delta", 0) or 0)
+    return f"+{delta}" if delta > 0 else str(delta)
+
+
+def _expected_lift_text(comparison: dict[str, Any]) -> str:
+    """Explain the simulated before-after score delta in seller language."""
+    before = int(comparison.get("before_score", 0) or 0)
+    after = int(comparison.get("after_score", 0) or 0)
+    delta = int(comparison.get("score_delta", after - before) or 0)
+    if _language_code() == "tr":
+        if delta > 0:
+            return (
+                f"Düzeltme paketi simülasyonda {before}/100 seviyesinden {after}/100 "
+                f"seviyesine çıkarak +{delta} puan iyileşme gösteriyor."
+            )
+        if delta == 0:
+            return "Düzeltme paketi simülasyonda skoru değiştirmedi; önce kalan riskleri azaltmak gerekir."
+        return f"Düzeltme paketi simülasyonda {abs(delta)} puan düşüş gösterdi; öneriler yeniden kontrol edilmeli."
+
+    if delta > 0:
+        return f"The fix pack raises the simulated score from {before}/100 to {after}/100, a +{delta} point lift."
+    if delta == 0:
+        return "The fix pack did not change the simulated score; reduce remaining risks before retesting."
+    return f"The fix pack reduced the simulated score by {abs(delta)} points; review the recommendations."
 
 
 def _render_list(values: list[str] | tuple[str, ...]) -> None:
@@ -1635,12 +1836,34 @@ def _inject_styles() -> None:
             max-width: 840px;
             margin: 0;
           }
+          .hero-disclaimer {
+            color: #cbd5e1;
+            font-size: 13px;
+            font-weight: 700;
+            margin: 12px 0 0;
+          }
           .hero-badges {
             display: flex;
             flex-wrap: wrap;
             gap: 8px;
             justify-content: flex-end;
             max-width: 360px;
+          }
+          .guide-strip {
+            background: rgba(56, 189, 248, 0.08);
+            border: 1px solid rgba(56, 189, 248, 0.18);
+            border-radius: 8px;
+            display: grid;
+            gap: 10px;
+            grid-template-columns: repeat(3, 1fr);
+            margin: 18px 0;
+            padding: 12px;
+          }
+          .guide-strip span {
+            color: #dbeafe;
+            font-size: 13px;
+            font-weight: 800;
+            text-align: center;
           }
           .status-pill {
             background: rgba(56, 189, 248, 0.11);
@@ -1790,6 +2013,9 @@ def _inject_styles() -> None:
             .hero-badges {
               justify-content: flex-start;
               margin-top: 18px;
+            }
+            .guide-strip {
+              grid-template-columns: 1fr;
             }
           }
         </style>

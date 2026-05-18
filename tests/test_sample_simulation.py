@@ -26,11 +26,11 @@ def test_sample_products_are_valid_and_safe():
 
     assert len(products) >= 7
     assert {product["name"] for product in products} >= {
-        "Wireless Earbuds Demo",
-        "Running Shoes Demo",
-        "Coffee Machine Demo",
-        "Digital Service Demo",
-        "Online Course Demo",
+        "Wireless Earbuds (Demo)",
+        "Running Shoes (Demo)",
+        "Coffee Machine (Demo)",
+        "Digital Service (Demo)",
+        "Online Course (Demo)",
         "Edge Case: Overpriced Pencil",
         "Edge Case: Empty Product Page",
     }

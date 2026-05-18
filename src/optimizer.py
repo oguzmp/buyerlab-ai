@@ -163,42 +163,64 @@ def _suggestion_from_json(
     attention_map: AttentionMapReport | None,
 ) -> OptimizedProductSuggestion:
     """Convert Gemini JSON into a safe OptimizedProductSuggestion."""
+    fallback = _fallback_suggestion(product, final_report, attention_map)
     suggestion = OptimizedProductSuggestion(
         title=_short_text(raw_suggestion.get("title")) or product.title,
-        description=_short_text(raw_suggestion.get("description"), limit=320)
-        or _fallback_description(product),
-        value_proposition=_short_text(raw_suggestion.get("value_proposition"), limit=220)
-        or _fallback_value_proposition(product),
-        warranty_or_return_policy=_short_text(
+        description=_seller_text_or_fallback(
+            raw_suggestion.get("description"),
+            fallback.description,
+            limit=320,
+        ),
+        value_proposition=_seller_text_or_fallback(
+            raw_suggestion.get("value_proposition"),
+            fallback.value_proposition,
+            limit=220,
+        ),
+        warranty_or_return_policy=_seller_text_or_fallback(
             raw_suggestion.get("warranty_or_return_policy"),
+            fallback.warranty_or_return_policy,
             limit=180,
-        )
-        or _fallback_warranty(product),
-        shipping_info=_short_text(raw_suggestion.get("shipping_info"), limit=180)
-        or _fallback_shipping(product),
-        trust_signals=_short_list(raw_suggestion.get("trust_signals"), limit=5)
-        or _fallback_trust_signals(product),
-        trust_proof_checklist=_short_list(
+        ),
+        shipping_info=_seller_text_or_fallback(
+            raw_suggestion.get("shipping_info"),
+            fallback.shipping_info,
+            limit=180,
+        ),
+        trust_signals=_seller_list_or_fallback(
+            raw_suggestion.get("trust_signals"),
+            fallback.trust_signals,
+            limit=5,
+        ),
+        trust_proof_checklist=_seller_list_or_fallback(
             raw_suggestion.get("trust_proof_checklist"),
+            fallback.trust_proof_checklist,
             limit=6,
-        )
-        or _fallback_trust_proof_checklist(product, final_report),
-        faq_items=_short_list(raw_suggestion.get("faq_items"), limit=5)
-        or _fallback_faq_items(product, final_report),
+        ),
+        faq_items=_seller_list_or_fallback(
+            raw_suggestion.get("faq_items"),
+            fallback.faq_items,
+            limit=5,
+        ),
         competitor_comparison_suggestion=_short_text(
             raw_suggestion.get("competitor_comparison_suggestion"),
             limit=240,
         )
-        or _fallback_competitor_comparison(product),
-        missing_information_checklist=_short_list(
+        or fallback.competitor_comparison_suggestion,
+        missing_information_checklist=_seller_list_or_fallback(
             raw_suggestion.get("missing_information_checklist"),
+            fallback.missing_information_checklist,
             limit=8,
-        )
-        or _fallback_missing_information_checklist(product),
-        call_to_action=_short_text(raw_suggestion.get("call_to_action"), limit=80)
-        or _fallback_call_to_action(product),
-        change_summary=_short_list(raw_suggestion.get("change_summary"), limit=5)
-        or _fallback_change_summary(final_report, attention_map),
+        ),
+        call_to_action=_seller_text_or_fallback(
+            raw_suggestion.get("call_to_action"),
+            fallback.call_to_action,
+            limit=80,
+        ),
+        change_summary=_seller_list_or_fallback(
+            raw_suggestion.get("change_summary"),
+            fallback.change_summary,
+            limit=5,
+        ),
     )
     return suggestion
 
@@ -235,18 +257,18 @@ def _fallback_title(product: ProductInput) -> str:
     if identity:
         return _short_text(identity)
     if product.title and product.category:
-        return _short_text(f"{product.title} for {product.intended_use_case or product.category}")
-    return product.title or "Product for your next launch"
+        return _short_text(f"{product.title} - {product.intended_use_case or product.category}")
+    return product.title or "Yayın öncesi test edilecek ürün"
 
 
 def _fallback_description(product: ProductInput) -> str:
     """Return concise description copy grounded in the original product input."""
-    base = product.description or "Describe what the product does and who it helps."
-    audience = product.intended_use_case or product.target_audience or "the intended buyer"
+    base = product.description or "Ürünün ne işe yaradığını ve kime hitap ettiğini net anlat."
+    audience = product.intended_use_case or product.target_audience or "hedef müşteri"
     missing = _fallback_missing_information_checklist(product)
-    missing_text = f" Add real proof for: {', '.join(missing[:3])}." if missing else ""
+    missing_text = f" Şunlar için gerçek kanıt ekle: {', '.join(missing[:3])}." if missing else ""
     return _short_text(
-        f"{base} Built for {audience}. State the key benefit, exact proof, price justification, and next step clearly.{missing_text}",
+        f"{base} Kullanım bağlamı: {audience}. Ana faydayı, somut kanıtı, fiyat gerekçesini ve sonraki adımı açık yaz.{missing_text}",
         limit=320,
     )
 
@@ -256,33 +278,33 @@ def _fallback_value_proposition(product: ProductInput) -> str:
     price_report = analyze_local_price_perception(product)
     if product.value_proposition:
         return _short_text(
-            f"{product.value_proposition} Justify the {price_report.price_band} price with concrete proof, risk reduction, and category-specific details.",
+            f"{product.value_proposition} Bu fiyat bandını somut kanıt, risk azaltıcı bilgiler ve kategoriye özel detaylarla destekle.",
             limit=220,
         )
-    return "Explain the main benefit, why it matters, and what real proof justifies the price."
+    return "Ana faydayı, neden önemli olduğunu ve fiyatı hangi gerçek kanıtların desteklediğini açıkla."
 
 
 def _fallback_warranty(product: ProductInput) -> str:
     """Suggest real warranty or return policy content without fabricating terms."""
     if product.warranty_or_return_policy:
         return product.warranty_or_return_policy
-    return "Add your real return window, refund conditions, and warranty coverage."
+    return "Gerçek iade süresini, iade koşullarını ve varsa garanti kapsamını ekle."
 
 
 def _fallback_shipping(product: ProductInput) -> str:
     """Suggest realistic shipping information without inventing logistics."""
     if product.shipping_info:
         return product.shipping_info
-    return "Add real shipping cost, delivery timing, regions served, and handling notes."
+    return "Gerçek kargo ücretini, teslimat süresini, hizmet verilen bölgeleri ve teslimat notlarını ekle."
 
 
 def _fallback_trust_signals(product: ProductInput) -> list[str]:
     """Suggest verifiable trust signals instead of fabricated social proof."""
     signals = list(product.trust_signals)
     suggestions = [
-        "Add verified customer reviews when available.",
-        "Show secure checkout and accepted payment methods.",
-        "Link to real return, warranty, and support policies.",
+        "Gerçek müşteri yorumu varsa ekle.",
+        "Güvenli ödeme ve kabul edilen ödeme yöntemlerini göster.",
+        "Gerçek iade, garanti ve destek politikalarına bağlantı ver.",
     ]
     for suggestion in suggestions:
         if suggestion not in signals:
@@ -296,14 +318,14 @@ def _fallback_trust_proof_checklist(
 ) -> list[str]:
     """Create a concrete trust proof checklist without inventing fake claims."""
     checklist = [
-        "Add exact warranty duration and return conditions.",
-        "Add real support channel and service policy.",
-        "Add real proof assets instead of generic quality claims.",
+        "Net garanti süresi ve iade koşullarını ekle.",
+        "Gerçek destek kanalı ve servis politikasını göster.",
+        "Genel kalite iddiaları yerine gerçek kanıt varlıkları ekle.",
     ]
     if final_report.trust_risk_score >= 50:
-        checklist.append("Place trust proof near price and CTA before launch.")
+        checklist.append("Güven kanıtlarını fiyat ve satın alma çağrısının yakınına yerleştir.")
     if not product.reviews_or_social_proof.strip():
-        checklist.append("Add verified reviews or previous work examples only when real.")
+        checklist.append("Yalnızca gerçekse doğrulanmış yorum veya önceki iş örneği ekle.")
     return _dedupe_short_list(checklist, limit=6)
 
 
@@ -314,17 +336,17 @@ def _fallback_faq_items(
     """Create FAQ suggestions from report risks and product gaps."""
     faq_items: list[str] = []
     if final_report.return_risk_score >= 40 or not product.warranty_or_return_policy:
-        faq_items.append("What is the real return or warranty policy?")
+        faq_items.append("Gerçek iade veya garanti koşulları nedir?")
     if final_report.price_resistance_score >= 40:
-        faq_items.append("Why is this product worth the price?")
+        faq_items.append("Bu ürün neden bu fiyatı hak ediyor?")
     if final_report.price_justification_verdict:
-        faq_items.append("What proof supports the price positioning?")
+        faq_items.append("Fiyat konumlandırmasını hangi kanıt destekliyor?")
     if final_report.trust_risk_score >= 40:
-        faq_items.append("What proof or real customer feedback is available?")
+        faq_items.append("Hangi gerçek kanıt veya müşteri geri bildirimi mevcut?")
     if not product.shipping_info:
-        faq_items.append("How much does shipping cost and how long does delivery take?")
+        faq_items.append("Kargo ücreti ve teslimat süresi nedir?")
     if not faq_items:
-        faq_items.append("Who is this product best suited for?")
+        faq_items.append("Bu ürün en çok kimler için uygun?")
     return faq_items[:5]
 
 
@@ -336,18 +358,18 @@ def _fallback_competitor_comparison(product: ProductInput) -> str:
         or competitor.competitor_price
         or competitor.our_differentiator
     ):
-        return "Competitor context was not provided; add one alternative product before writing a comparison."
+        return "Rakip bilgisi girilmedi; karşılaştırma yazmadan önce bir alternatif ürün bilgisi eklenebilir."
 
     gap = analyze_competitor_gap(product)
     name = competitor.competitor_name or "the competitor"
     if gap.price_gap and gap.price_gap > 0:
         return (
-            f"Add a short comparison table against {name}: price gap, stated differentiator, "
-            "proof assets, warranty/return terms, and why the higher price is justified."
+            f"{name} ile kısa bir karşılaştırma tablosu ekle: fiyat farkı, iddia edilen ayrışma, "
+            "kanıtlar, garanti/iade koşulları ve yüksek fiyatın gerekçesi."
         )
     return (
-        f"Add a short comparison table against {name}: price, differentiator, proof assets, "
-        "support terms, and buyer risk reducers."
+        f"{name} ile kısa bir karşılaştırma tablosu ekle: fiyat, ayrışma, kanıtlar, "
+        "destek koşulları ve müşteri riskini azaltan bilgiler."
     )
 
 
@@ -366,7 +388,7 @@ def _fallback_call_to_action(product: ProductInput) -> str:
     """Return a clearer CTA grounded in the existing page."""
     if product.call_to_action:
         return product.call_to_action
-    return "Check availability"
+    return "Ürünü incele"
 
 
 def _fallback_change_summary(
@@ -376,19 +398,19 @@ def _fallback_change_summary(
     """Summarize optimization priorities by expected simulated business impact."""
     changes: list[str] = []
     if final_report.trust_risk_score >= 40:
-        changes.append("Prioritized real trust signals and purchase risk reducers.")
+        changes.append("Öncelik gerçek güven sinyallerine ve satın alma riskini azaltan bilgilere verildi.")
     if final_report.clarity_score < 70:
-        changes.append("Clarified product details and value proposition.")
+        changes.append("Ürün detayları ve değer önerisi daha net hale getirildi.")
     if final_report.price_resistance_score >= 40:
-        changes.append("Added stronger price and value justification.")
+        changes.append("Fiyat ve değer gerekçesi güçlendirildi.")
     if final_report.required_fix_before_launch:
-        changes.append("Focused the fix pack on required fixes before launch.")
+        changes.append("Düzeltme paketi yayından önce gereken kritik maddelere odaklandı.")
     if final_report.launch_decision_summary:
         changes.append(final_report.launch_decision_summary)
     if attention_map and attention_map.highest_friction_section:
-        changes.append(f"Reduced friction in {attention_map.highest_friction_section}.")
+        changes.append(f"En yüksek sürtünme görülen bölüm için düzeltme önerisi üretildi: {attention_map.highest_friction_section}.")
     if not changes:
-        changes.append("Tightened copy for clearer simulated conversion score testing.")
+        changes.append("Metin, daha net simüle dönüşüm skoru testi için sadeleştirildi.")
     return changes[:5]
 
 
@@ -433,35 +455,32 @@ def _remaining_risks(state: SimulationState) -> list[str]:
     if state.final_report:
         risks.extend(state.final_report.buyer_loss_reasons[:3])
         if state.final_report.trust_risk_score >= 50:
-            risks.append("Trust risk remains elevated.")
+            risks.append("Güven riski hâlâ yüksek.")
         if state.final_report.price_resistance_score >= 50:
-            risks.append("Price resistance remains elevated.")
+            risks.append("Fiyat direnci hâlâ yüksek.")
         if state.final_report.return_risk_score >= 50:
-            risks.append("Shipping or return concerns remain elevated.")
+            risks.append("Kargo veya iade endişesi hâlâ yüksek.")
 
     if state.attention_map:
         risks.append(
-            f"Highest simulated friction remains in {state.attention_map.highest_friction_section}."
+            f"En yüksek simüle sürtünme hâlâ {state.attention_map.highest_friction_section} bölümünde."
         )
 
-    return _dedupe_short_list(risks, limit=5) or ["No major remaining risk identified."]
+    return _dedupe_short_list(risks, limit=5) or ["Belirgin kalan risk tespit edilmedi."]
 
 
 def _comparison_summary(before_score: int, after_score: int, score_delta: int) -> str:
     """Create a concise before-after summary using simulated score language."""
     if score_delta > 0:
         return (
-            "Simulated conversion score improved after optimization; rerun with "
-            "real page constraints before launch."
+            "Düzeltme paketi sonrası simüle dönüşüm skoru iyileşti; yayından önce gerçek sayfa içeriğiyle tekrar test et."
         )
     if score_delta < 0:
         return (
-            "Simulated conversion score decreased after optimization; review the "
-            "changes before using this copy."
+            "Düzeltme paketi sonrası simüle dönüşüm skoru düştü; bu metni kullanmadan önce önerileri gözden geçir."
         )
     return (
-        "Simulated conversion score was unchanged; focus on remaining buyer risks "
-        "before another test."
+        "Simüle dönüşüm skoru değişmedi; yeni testten önce kalan müşteri risklerine odaklan."
     )
 
 
@@ -499,3 +518,43 @@ def _short_text(value: Any, limit: int = 180) -> str:
     if len(text) <= limit:
         return text
     return f"{text[: limit - 3].rstrip()}..."
+
+
+def _seller_text_or_fallback(value: Any, fallback: str, limit: int = 180) -> str:
+    """Use Gemini text only when it looks seller-ready and not English/template-like."""
+    text = _short_text(value, limit=limit)
+    if not text or _looks_like_english_template(text):
+        return fallback
+    return text
+
+
+def _seller_list_or_fallback(value: Any, fallback: list[str], limit: int = 5) -> list[str]:
+    """Use Gemini list items only when they are dashboard-ready for Turkish sellers."""
+    items = _short_list(value, limit=limit)
+    if not items or any(_looks_like_english_template(item) for item in items):
+        return fallback[:limit]
+    return items
+
+
+def _looks_like_english_template(text: str) -> bool:
+    """Detect common English/template output that should not be shown in the Turkish UI."""
+    lowered = f" {text.lower()} "
+    markers = [
+        " add ",
+        " built for ",
+        " state ",
+        " proof ",
+        " warranty ",
+        " shipping ",
+        " customer ",
+        " before launch ",
+        " price ",
+        " value ",
+        " support ",
+        " review ",
+        " when available ",
+        " positioned ",
+        " checkout ",
+        " delivery ",
+    ]
+    return any(marker in lowered for marker in markers)

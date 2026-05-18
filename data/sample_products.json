@@ -1,7 +1,7 @@
 [
   {
     "id": "wireless-earbuds-demo",
-    "name": "Wireless Earbuds Demo",
+    "name": "Wireless Earbuds (Demo)",
     "brand": "SoundPeak",
     "model": "AirBass X2",
     "product_type": "Wireless earbuds",
@@ -47,7 +47,7 @@
   },
   {
     "id": "running-shoes-demo",
-    "name": "Running Shoes Demo",
+    "name": "Running Shoes (Demo)",
     "brand": "Runora",
     "model": "FlexStep 3",
     "product_type": "Running shoes",
@@ -92,7 +92,7 @@
   },
   {
     "id": "coffee-machine-demo",
-    "name": "Coffee Machine Demo",
+    "name": "Coffee Machine (Demo)",
     "brand": "Brewora",
     "model": "CompactBar Pro",
     "product_type": "Coffee machine",
@@ -141,7 +141,7 @@
   },
   {
     "id": "digital-service-demo",
-    "name": "Digital Service Demo",
+    "name": "Digital Service (Demo)",
     "brand": "PixelNest Studio",
     "model": "Starter Business Website Package",
     "product_type": "Web design service",
@@ -189,7 +189,7 @@
   },
   {
     "id": "online-course-demo",
-    "name": "Online Course Demo",
+    "name": "Online Course (Demo)",
     "brand": "DataPath Academy",
     "model": "SQL Foundations for Beginners",
     "product_type": "Online course",

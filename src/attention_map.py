@@ -19,6 +19,19 @@ from src.state import (
 
 HIGH_SCORE_THRESHOLD = 60
 
+SECTION_LABELS_TR = {
+    "title": "Başlık",
+    "price": "Fiyat",
+    "hero_image": "Ana görsel",
+    "description": "Ürün açıklaması",
+    "value_proposition": "Değer önerisi",
+    "warranty_or_return_policy": "Garanti / iade",
+    "shipping_info": "Kargo bilgisi",
+    "trust_signals": "Güven sinyalleri",
+    "reviews_or_social_proof": "Yorumlar / sosyal kanıt",
+    "call_to_action": "Satın alma çağrısı",
+}
+
 
 SECTION_FIELD_MAP = {
     "title": "title",
@@ -147,9 +160,8 @@ def aggregate_section_scores(section_scores: list[PageSectionScore]) -> Attentio
         weakest_section=weakest.section_name,
         highest_friction_section=highest_friction.section_name,
         summary=(
-            "AI-simulated buyer attention highlights "
-            f"{strongest.section_name}; conversion friction is highest in "
-            f"{highest_friction.section_name}."
+            f"AI destekli dikkat analizinde en güçlü bölüm {_section_label(strongest.section_name)}. "
+            f"En yüksek dönüşüm sürtünmesi {_section_label(highest_friction.section_name)} bölümünde."
         ),
     )
 
@@ -329,8 +341,8 @@ def _ensure_all_sections(section_scores: list[PageSectionScore]) -> list[PageSec
                     attention_score=40,
                     friction_score=40,
                     sentiment="neutral",
-                    reason="No simulated buyer section signal available.",
-                    suggested_fix="Review this section for clarity.",
+                    reason=f"{_section_label(section_name)} için yeterli değerlendirme sinyali üretilemedi.",
+                    suggested_fix=f"{_section_label(section_name)} bölümünü daha net ve kısa hale getir.",
                 )
             ]
         )
@@ -429,20 +441,22 @@ def _keyword_hits(section_name: str, buyer_text: str) -> int:
 
 def _fallback_reason(section_name: str, has_content: bool, keyword_hits: int) -> str:
     """Create a short fallback reason for a section score."""
+    label = _section_label(section_name)
     if not has_content:
-        return f"{section_name} lacks enough page content for simulated buyers."
+        return f"{label} bölümünde simüle müşteriler için yeterli bilgi yok."
     if keyword_hits:
-        return f"Buyer feedback points to friction around {section_name}."
-    return f"{section_name} has limited simulated friction."
+        return f"Müşteri itirazları {label} bölümünde belirsizlik olduğunu gösteriyor."
+    return f"{label} bölümü düşük düzeyde sürtünme gösteriyor."
 
 
 def _fallback_suggested_fix(section_name: str, has_content: bool, keyword_hits: int) -> str:
     """Create a short fallback improvement suggestion."""
+    label = _section_label(section_name)
     if not has_content:
-        return f"Add clear {section_name} content before launch."
+        return f"Yayından önce {label} bölümüne net bilgi ekle."
     if keyword_hits:
-        return f"Reduce buyer uncertainty in {section_name}."
-    return f"Keep {section_name} concise and easy to scan."
+        return f"{label} bölümündeki müşteri belirsizliğini azalt."
+    return f"{label} bölümünü kısa ve hızlı okunabilir tut."
 
 
 def _sentiment_from_scores(attention_score: int, friction_score: int) -> str:
@@ -483,3 +497,8 @@ def _short_text(value: Any, default: str, limit: int = 120) -> str:
     if len(text) <= limit:
         return text
     return f"{text[: limit - 3].rstrip()}..."
+
+
+def _section_label(section_name: str) -> str:
+    """Return a seller-friendly Turkish section name for fallback copy."""
+    return SECTION_LABELS_TR.get(section_name, section_name.replace("_", " "))

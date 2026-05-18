@@ -16,11 +16,9 @@ def test_streamlit_sample_loader_populates_product_brief(monkeypatch):
 
     app = AppTest.from_file("app.py")
     app.run(timeout=10)
-    _button(app, "Örneği yükle").click().run(timeout=10)
+    _button(app, "Kablosuz Kulaklık (Demo) çalıştır").click().run(timeout=30)
 
     assert not app.exception
-    assert _value(app.text_input, "Marka") == "SoundPeak"
-    assert _value(app.text_input, "Model") == "AirBass X2"
     assert _value(app.number_input, "Fiyat") == 799.0
     assert _value(app.text_input, "Ürün başlığı") == "SoundPeak AirBass X2 Wireless Earbuds"
 
@@ -30,18 +28,14 @@ def test_streamlit_mock_audit_renders_core_dashboard(monkeypatch):
 
     app = AppTest.from_file("app.py")
     app.run(timeout=10)
-    _button(app, "Örneği yükle").click().run(timeout=10)
-    _button(app, "Ürün Sayfasını Test Et").click().run(timeout=30)
+    _button(app, "Kablosuz Kulaklık (Demo) çalıştır").click().run(timeout=30)
 
     assert not app.exception
     assert [tab.label for tab in app.tabs] == [
-        "Yayına Hazırlık",
-        "AI Müşteri Profilleri",
-        "Pazar Bağlamı",
-        "Kategori Denetimi",
+        "Rapor",
+        "Müşteri İtirazları",
         "Dönüşüm Sürtünme Haritası",
-        "Düzeltme Paketi",
-        "Önce / Sonra",
+        "Düzeltme Planı",
     ]
     metric_labels = {metric.label for metric in app.metric}
     assert "Yayına Hazırlık Skoru" in metric_labels

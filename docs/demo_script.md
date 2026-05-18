@@ -6,7 +6,7 @@ Before recording, set `BUYERLAB_MOCK_MODE=true` for a deterministic demo if a Ge
 
 ## Recommended Primary Demo
 
-Use **Wireless Earbuds Demo**.
+Use **Wireless Earbuds (Demo)**.
 
 Why this sample works well:
 
@@ -22,7 +22,7 @@ Why this sample works well:
 
 ## 10-20 sec: Product Brief
 
-"I will load the Wireless Earbuds Demo. It includes brand, model, product type, TRY price, local market, competitor context, proof assets, known limitations, and product-page copy."
+"I will load the Wireless Earbuds (Demo). It includes brand, model, product type, TRY price, local market, competitor context, proof assets, known limitations, and product-page copy."
 
 ## 20-35 sec: AI Buyer Simulation
 

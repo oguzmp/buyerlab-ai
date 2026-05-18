@@ -114,6 +114,12 @@ Run the Streamlit app:
 streamlit run app.py
 ```
 
+## cPanel Deployment
+
+A cPanel upload package can be prepared as `dist/buyerlab-ai-cpanel.zip`.
+
+BuyerLab AI is a Streamlit app, so cPanel must support a long-running Python process or reverse proxy setup. Classic static/PHP-only cPanel hosting cannot run Streamlit directly. See `deployment/cpanel/README.md` for the exact upload notes.
+
 ## Environment Variables
 
 - `GEMINI_API_KEY`: Gemini API key used for live AI responses.
@@ -132,7 +138,7 @@ streamlit run app.py
 
 Recommended primary demo:
 
-- Wireless Earbuds Demo
+- Wireless Earbuds (Demo)
 
 This demo works well because it shows a brand/model-level product audit, heuristic local TRY price perception, a competitor price gap, missing technical proof, trust risk, and before-after improvement.
 
