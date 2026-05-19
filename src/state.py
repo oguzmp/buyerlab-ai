@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any, Literal
+from typing import Any, Literal, Optional
 
 
 Decision = Literal["buy", "reject", "hesitate"]
@@ -84,7 +84,7 @@ class CompetitorContext:
     """Optional seller-provided competitor context, not live competitor research."""
 
     competitor_name: str = ""
-    competitor_price: float | None = None
+    competitor_price: Optional[float] = None
     competitor_currency: str = ""
     competitor_strengths: list[str] = field(default_factory=list)
     competitor_weaknesses: list[str] = field(default_factory=list)
@@ -95,7 +95,7 @@ class CompetitorContext:
 class CompetitorGapReport:
     """Heuristic gap analysis based only on seller-provided competitor context."""
 
-    price_gap: float | None = None
+    price_gap: Optional[float] = None
     value_gap_summary: str = ""
     competitor_advantage: str = ""
     our_unproven_claims: list[str] = field(default_factory=list)
@@ -126,8 +126,8 @@ class ProductInput:
     trust_signals: list[str] = field(default_factory=list)
     reviews_or_social_proof: str = ""
     call_to_action: str = ""
-    image_notes: str | None = None
-    competitor_context: CompetitorContext | None = None
+    image_notes: Optional[str] = None
+    competitor_context: Optional[CompetitorContext] = None
     proof_assets: list[str] = field(default_factory=list)
     known_limitations: list[str] = field(default_factory=list)
 
@@ -351,11 +351,11 @@ class SimulationState:
     personas: list[BuyerPersona] = field(default_factory=list)
     first_round_responses: list[AgentResponse] = field(default_factory=list)
     debate_history: list[DebateTurn] = field(default_factory=list)
-    final_report: SimulationReport | None = None
-    attention_map: AttentionMapReport | None = None
-    optimized_product_copy: str | None = None
-    before_score: int | None = None
-    after_score: int | None = None
+    final_report: Optional[SimulationReport] = None
+    attention_map: Optional[AttentionMapReport] = None
+    optimized_product_copy: Optional[str] = None
+    before_score: Optional[int] = None
+    after_score: Optional[int] = None
 
     def __post_init__(self) -> None:
         if self.before_score is not None:

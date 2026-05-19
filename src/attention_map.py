@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 from dataclasses import asdict
 from statistics import mean
-from typing import Any
+from typing import Any, Optional
 
 from src.gemini_client import generate_json
 from src.state import (
@@ -64,7 +64,7 @@ SECTION_KEYWORDS = {
 def build_attention_map_prompt(
     product: ProductInput,
     agent_responses: list[AgentResponse],
-    buyer_loss_analysis: list[dict[str, Any]] | None = None,
+    buyer_loss_analysis: Optional[list[dict[str, Any]]] = None,
 ) -> str:
     """Build a prompt for AI-simulated attention and friction scoring."""
     context = {
@@ -115,7 +115,7 @@ Rules:
 def generate_attention_map(
     product: ProductInput,
     agent_responses: list[AgentResponse],
-    buyer_loss_analysis: list[dict[str, Any]] | None = None,
+    buyer_loss_analysis: Optional[list[dict[str, Any]]] = None,
 ) -> AttentionMapReport:
     """Generate an AI-simulated attention and conversion friction report."""
     fallback_scores = _fallback_section_scores(
@@ -210,7 +210,7 @@ def _section_scores_from_json(
     ]
 
 
-def _page_section_score_from_json(raw_score: Any) -> PageSectionScore | None:
+def _page_section_score_from_json(raw_score: Any) -> Optional[PageSectionScore]:
     """Convert one raw JSON section score into a safe PageSectionScore."""
     if not isinstance(raw_score, dict):
         return None
@@ -232,7 +232,7 @@ def _page_section_score_from_json(raw_score: Any) -> PageSectionScore | None:
 def _fallback_section_scores(
     product: ProductInput,
     agent_responses: list[AgentResponse],
-    buyer_loss_analysis: list[dict[str, Any]] | None,
+    buyer_loss_analysis: Optional[list[dict[str, Any]]],
 ) -> list[PageSectionScore]:
     """Create safe deterministic section scores when Gemini output is unavailable."""
     buyer_text = _combined_buyer_text(agent_responses, buyer_loss_analysis)
@@ -385,7 +385,7 @@ def _response_as_dict(response: Any) -> dict[str, Any]:
 
 def _combined_buyer_text(
     agent_responses: list[AgentResponse],
-    buyer_loss_analysis: list[dict[str, Any]] | None,
+    buyer_loss_analysis: Optional[list[dict[str, Any]]],
 ) -> str:
     """Combine buyer objections and loss analysis into searchable text."""
     response_parts: list[str] = []

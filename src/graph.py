@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Optional, Union
 
 from src.agents import run_debate_round, run_initial_buyer_round
 from src.judge import run_judge_report
@@ -28,12 +28,12 @@ def run_simulation(product: ProductInput) -> SimulationState:
     return state
 
 
-def run_sample_simulation(product: ProductInput | dict[str, Any]) -> SimulationState:
+def run_sample_simulation(product: Union[ProductInput, dict[str, Any]]) -> SimulationState:
     """Backward-compatible wrapper for early local smoke tests."""
     return run_simulation(_coerce_product_input(product))
 
 
-def _coerce_product_input(product: ProductInput | dict[str, Any]) -> ProductInput:
+def _coerce_product_input(product: Union[ProductInput, dict[str, Any]]) -> ProductInput:
     """Convert old sample product dictionaries into ProductInput objects."""
     if isinstance(product, ProductInput):
         return product
@@ -76,7 +76,7 @@ def _coerce_string_list(value: Any) -> list[str]:
     return []
 
 
-def _coerce_competitor_context(value: Any) -> CompetitorContext | None:
+def _coerce_competitor_context(value: Any) -> Optional[CompetitorContext]:
     """Normalize optional competitor context dictionaries from sample data."""
     if isinstance(value, CompetitorContext):
         return value
@@ -93,7 +93,7 @@ def _coerce_competitor_context(value: Any) -> CompetitorContext | None:
     )
 
 
-def _coerce_optional_float(value: Any) -> float | None:
+def _coerce_optional_float(value: Any) -> Optional[float]:
     """Convert optional numeric fields without turning missing values into zero."""
     if value in (None, ""):
         return None

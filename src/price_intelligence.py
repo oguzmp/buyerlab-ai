@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 from dataclasses import asdict
-from typing import Any
+from typing import Any, Optional
 
 from src.category_intelligence import (
     apply_category_persona_weights,
@@ -130,7 +130,7 @@ def analyze_competitor_gap(product: ProductInput) -> CompetitorGapReport:
 
 def analyze_competitor_context(
     product: ProductInput,
-    price_report: PricePerceptionReport | None = None,
+    price_report: Optional[PricePerceptionReport] = None,
 ) -> dict[str, Any]:
     """Backward-compatible dict wrapper for competitor gap analysis."""
     report = analyze_competitor_gap(product)
@@ -401,7 +401,7 @@ def _is_turkey_market(local_market: str) -> bool:
     return (local_market or "").strip().lower() in {"turkey", "turkiye", "türkiye"}
 
 
-def _has_competitor_context(competitor: CompetitorContext | None) -> bool:
+def _has_competitor_context(competitor: Optional[CompetitorContext]) -> bool:
     """Return True when seller-provided competitor context exists."""
     if competitor is None:
         return False
@@ -416,7 +416,7 @@ def _has_competitor_context(competitor: CompetitorContext | None) -> bool:
     )
 
 
-def _competitor_as_dict(competitor: CompetitorContext | None) -> dict[str, Any] | None:
+def _competitor_as_dict(competitor: Optional[CompetitorContext]) -> Optional[dict[str, Any]]:
     """Serialize optional competitor context for prompts."""
     if competitor is None:
         return None
@@ -426,7 +426,7 @@ def _competitor_as_dict(competitor: CompetitorContext | None) -> dict[str, Any] 
 def _competitor_price_gap(
     product: ProductInput,
     competitor: CompetitorContext,
-) -> float | None:
+) -> Optional[float]:
     """Return same-currency price gap; do not convert currencies."""
     if competitor.competitor_price is None or competitor.competitor_price <= 0:
         return None
@@ -440,7 +440,7 @@ def _competitor_price_gap(
 def _competitor_gap_summary(
     product: ProductInput,
     competitor: CompetitorContext,
-    price_gap: float | None,
+    price_gap: Optional[float],
 ) -> str:
     """Summarize competitor value gap from user-provided context only."""
     name = competitor.competitor_name.strip() or "the provided competitor"
@@ -491,7 +491,7 @@ def _unproven_competitor_claims(product: ProductInput) -> list[str]:
 def _competitor_positioning_comment(
     product: ProductInput,
     competitor: CompetitorContext,
-    price_gap: float | None,
+    price_gap: Optional[float],
     report: PricePerceptionReport,
 ) -> str:
     """Create a short competitor positioning comment."""

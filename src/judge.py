@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 from dataclasses import asdict
 from statistics import mean
-from typing import Any
+from typing import Any, Optional
 
 from src.gemini_client import generate_json
 from src.price_intelligence import (
@@ -469,7 +469,7 @@ def _simulation_report_from_json(
     )
 
 
-def _fallback_report(state: SimulationState, error: Exception | None = None) -> SimulationReport:
+def _fallback_report(state: SimulationState, error: Optional[Exception] = None) -> SimulationReport:
     """Create a final report when the judge agent fails or returns invalid JSON."""
     responses = state.first_round_responses
     enhanced_context = build_enhanced_judge_context(state)
@@ -708,7 +708,7 @@ def _personas_by_decision(responses: list[AgentResponse], decision: str) -> list
     ]
 
 
-def _short_list(*values: Any, default: list[str] | None = None, limit: int = 5) -> list[str]:
+def _short_list(*values: Any, default: Optional[list[str]] = None, limit: int = 5) -> list[str]:
     """Return a compact list from JSON values or a default."""
     items: list[str] = []
     for value in values:
@@ -800,7 +800,7 @@ def _safe_score(value: Any, default: int = 0) -> int:
     return max(0, min(100, score))
 
 
-def _safe_dict_list(value: Any, default: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+def _safe_dict_list(value: Any, default: Optional[list[dict[str, Any]]] = None) -> list[dict[str, Any]]:
     """Return a list of compact dictionaries from raw JSON or fallback."""
     if isinstance(value, list):
         rows = [dict(item) for item in value if isinstance(item, dict)]

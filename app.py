@@ -6,7 +6,7 @@ import json
 import os
 import re
 from pathlib import Path
-from typing import Any
+from typing import Any, Optional, Union
 
 import streamlit as st
 
@@ -543,7 +543,7 @@ def main() -> None:
     results = st.session_state.get("results")
     if results:
         _render_dashboard(results)
-        st.divider()
+        _divider()
         _render_product_brief_workspace()
     else:
         _render_product_brief_workspace()
@@ -554,6 +554,38 @@ def load_sample_products() -> list[dict[str, Any]]:
     """Load sample products for quick demos."""
     with DATA_PATH.open("r", encoding="utf-8") as file:
         return json.load(file)
+
+
+def _rerun() -> None:
+    """Rerun Streamlit across old and new Streamlit versions."""
+    if hasattr(st, "rerun"):
+        st.rerun()
+    else:  # Streamlit 1.10 compatibility on older cPanel Python setups.
+        st.experimental_rerun()
+
+
+def _divider() -> None:
+    """Render a divider that works on older Streamlit versions."""
+    if hasattr(st, "divider"):
+        st.divider()
+    else:
+        st.markdown("---")
+
+
+def _sidebar_divider() -> None:
+    """Render a sidebar divider that works on older Streamlit versions."""
+    if hasattr(st.sidebar, "divider"):
+        st.sidebar.divider()
+    else:
+        st.sidebar.markdown("---")
+
+
+def _render_table(rows: list[dict[str, Any]]) -> None:
+    """Render compact tabular output without newer dataframe-only options."""
+    if rows:
+        st.table(rows)
+    else:
+        st.info(_t("no_items"))
 
 
 def _language_code() -> str:
@@ -816,20 +848,20 @@ def _render_sample_loader() -> None:
         key="selected_sample",
     )
 
-    if st.sidebar.button(_t("load_sample"), width="stretch"):
+    if st.sidebar.button(_t("load_sample")):
         sample = samples[sample_names.index(selected_sample)]
         _load_product_into_state(sample)
         st.session_state["last_error"] = ""
-        st.rerun()
+        _rerun()
     st.sidebar.caption(_t("sample_report_help"))
-    if st.sidebar.button(_t("run_sample_report"), type="primary", width="stretch"):
+    if st.sidebar.button(_t("run_sample_report")):
         sample = _primary_demo_sample(all_samples)
         _load_product_into_state(sample)
         st.session_state["last_error"] = ""
         product = _product_from_inputs()
         _run_dashboard_simulation(product)
-        st.rerun()
-    st.sidebar.divider()
+        _rerun()
+    _sidebar_divider()
 
 
 def _render_quick_demo_panel() -> None:
@@ -844,19 +876,19 @@ def _render_quick_demo_panel() -> None:
     st.caption(_t("quick_demo_help"))
     run_col, load_col = st.columns([1, 1])
     with run_col:
-        if st.button(_t("run_primary_demo"), type="secondary", width="stretch"):
+        if st.button(_t("run_primary_demo")):
             _load_product_into_state(primary_sample)
             st.session_state["last_error"] = ""
             product = _product_from_inputs()
             _run_dashboard_simulation(product)
-            st.rerun()
+            _rerun()
     with load_col:
-        if secondary_sample and st.button(_t("run_secondary_demo"), width="stretch"):
+        if secondary_sample and st.button(_t("run_secondary_demo")):
             _load_product_into_state(secondary_sample)
             st.session_state["last_error"] = ""
             product = _product_from_inputs()
             _run_dashboard_simulation(product)
-            st.rerun()
+            _rerun()
 
 
 def _primary_demo_sample(samples: list[dict[str, Any]]) -> dict[str, Any]:
@@ -967,7 +999,7 @@ def _render_product_brief_workspace() -> None:
 
     action_col, caption_col = st.columns([0.32, 0.68])
     with action_col:
-        run_clicked = st.button(_t("run"), type="primary", width="stretch")
+        run_clicked = st.button(_t("run"))
     with caption_col:
         st.caption(_t("flow_caption"))
 
@@ -975,9 +1007,9 @@ def _render_product_brief_workspace() -> None:
         product = _product_from_inputs()
         if not product.title:
             st.session_state["last_error"] = _t("missing_title")
-            st.rerun()
+            _rerun()
         _run_dashboard_simulation(product)
-        st.rerun()
+        _rerun()
 
 
 def _render_header() -> None:
@@ -1051,7 +1083,7 @@ def _render_dashboard(results: dict[str, Any]) -> None:
         _render_launch_readiness(before_state.final_report, comparison)
         with st.expander(_t("audit_details"), expanded=False):
             _render_market_context(before_state)
-            st.divider()
+            _divider()
             _render_category_audit(before_state)
     with tabs[1]:
         _render_persona_cards(before_state.first_round_responses, before_state.final_report)
@@ -1062,12 +1094,12 @@ def _render_dashboard(results: dict[str, Any]) -> None:
         _render_attention_map(attention_map)
     with tabs[3]:
         _render_optimization(suggestion)
-        st.divider()
+        _divider()
         _render_before_after(comparison, after_state)
 
 
 def _render_launch_readiness(
-    final_report: SimulationReport | None,
+    final_report: Optional[SimulationReport],
     comparison: dict[str, Any],
 ) -> None:
     """Render launch readiness summary that is readable in under 10 seconds."""
@@ -1169,7 +1201,7 @@ def _render_one_minute_summary(
 
 def _render_persona_cards(
     responses: list[AgentResponse],
-    final_report: SimulationReport | None = None,
+    final_report: Optional[SimulationReport] = None,
 ) -> None:
     """Render buyer persona cards."""
     personas = get_default_personas()
@@ -1308,7 +1340,7 @@ def _render_category_audit(state: SimulationState) -> None:
             }
         )
 
-    st.dataframe(rows, width="stretch", hide_index=True)
+    _render_table(rows)
     missing_rows = [
         row
         for row in rows_source
@@ -1340,7 +1372,7 @@ def _render_attention_map(attention_map: AttentionMapReport) -> None:
                 _t("suggested_fix"): _report_text(score.suggested_fix),
             }
         )
-    st.dataframe(rows, width="stretch", hide_index=True)
+    _render_table(rows)
 
     cols = st.columns(3)
     cols[0].metric(_t("strongest"), _section_name(attention_map.strongest_section))
@@ -1619,7 +1651,7 @@ def _render_environment_notice() -> None:
 
     st.sidebar.caption(f"{_t('ai_mode')}: {mode} · {_t('ai_model')}: {model}")
 
-    if st.sidebar.button(_t("ai_test"), width="stretch"):
+    if st.sidebar.button(_t("ai_test")):
         try:
             result = generate_json(
                 'Return only valid JSON: {"ok": true, "message": "BuyerLab AI connection is ready"}'
@@ -1653,7 +1685,7 @@ def _parse_list(raw_value: str, limit: int = 8) -> list[str]:
 
 
 def _persona_verdicts_by_name(
-    final_report: SimulationReport | None,
+    final_report: Optional[SimulationReport],
 ) -> dict[str, dict[str, Any]]:
     """Index normalized buyer persona verdicts by persona name."""
     if final_report is None:
@@ -1711,7 +1743,7 @@ def _expected_lift_text(comparison: dict[str, Any]) -> str:
     return f"The fix pack reduced the simulated score by {abs(delta)} points; review the recommendations."
 
 
-def _render_list(values: list[str] | tuple[str, ...]) -> None:
+def _render_list(values: Union[list[str], tuple[str, ...]]) -> None:
     """Render concise dashboard list items."""
     if not values:
         st.caption(_t("no_items"))

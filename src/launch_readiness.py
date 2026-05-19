@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from dataclasses import asdict
 from statistics import mean
-from typing import Any
+from typing import Any, Optional
 
 from src.category_intelligence import (
     build_category_expectation_check as build_basic_category_expectation_check,
@@ -80,11 +80,11 @@ OPTIONAL_CONTEXT_FIELDS = [
 
 def build_launch_readiness_report(
     state: SimulationState,
-    risk_scores: dict[str, int] | None = None,
-    price_report: PricePerceptionReport | None = None,
-    competitor_gap: CompetitorGapReport | None = None,
-    buyer_loss_analysis: list[dict[str, Any]] | None = None,
-    clustered_objections: dict[str, list[str]] | None = None,
+    risk_scores: Optional[dict[str, int]] = None,
+    price_report: Optional[PricePerceptionReport] = None,
+    competitor_gap: Optional[CompetitorGapReport] = None,
+    buyer_loss_analysis: Optional[list[dict[str, Any]]] = None,
+    clustered_objections: Optional[dict[str, list[str]]] = None,
 ) -> LaunchReadinessReport:
     """Build an AI-assisted launch readiness diagnostic, not a market prediction."""
     product = state.product
@@ -280,7 +280,7 @@ def calculate_launch_readiness_score(
     price_report: PricePerceptionReport,
     competitor_gap: CompetitorGapReport,
     buyer_persona_verdicts: list[dict[str, Any]],
-    brief_quality: dict[str, Any] | None = None,
+    brief_quality: Optional[dict[str, Any]] = None,
 ) -> int:
     """Calculate a 0-100 AI-assisted diagnostic score, not a market prediction."""
     category_penalty = _category_penalty(category_expectation_check)
@@ -329,9 +329,9 @@ def determine_launch_status(
     trust_risk_score: int = 0,
     return_risk_score: int = 0,
     simulated_conversion_score: int = 100,
-    category_expectation_check: list[dict[str, Any]] | None = None,
-    price_report: PricePerceptionReport | None = None,
-    competitor_gap: CompetitorGapReport | None = None,
+    category_expectation_check: Optional[list[dict[str, Any]]] = None,
+    price_report: Optional[PricePerceptionReport] = None,
+    competitor_gap: Optional[CompetitorGapReport] = None,
     brief_completeness_score: int = 100,
     core_brief_missing_count: int = 0,
 ) -> str:
@@ -414,7 +414,7 @@ def build_category_expectation_check(product: ProductInput) -> list[dict[str, An
 
 def build_buyer_persona_verdicts(
     agent_responses: list[AgentResponse],
-    personas: list[BuyerPersona] | None = None,
+    personas: Optional[list[BuyerPersona]] = None,
 ) -> list[dict[str, Any]]:
     """Normalize buyer persona decisions into dashboard-ready verdict objects."""
     persona_names = {persona.id: persona.name for persona in personas or []}
@@ -449,8 +449,8 @@ def prioritize_conversion_blockers(
     category_expectation_check: list[dict[str, Any]],
     price_report: PricePerceptionReport,
     competitor_gap: CompetitorGapReport,
-    risk_scores: dict[str, int] | None = None,
-    clustered_objections: dict[str, list[str]] | None = None,
+    risk_scores: Optional[dict[str, int]] = None,
+    clustered_objections: Optional[dict[str, list[str]]] = None,
 ) -> list[str]:
     """Prioritize conversion blockers by expected business impact."""
     risk_scores = risk_scores or _calculate_risk_scores(
@@ -1123,7 +1123,7 @@ def _product_mentions_audio(product: ProductInput) -> bool:
     return any(word in text for word in ["earbud", "headphone", "audio", "mic", "microphone", "sound"])
 
 
-def _coerce_price_report(value: Any) -> PricePerceptionReport | None:
+def _coerce_price_report(value: Any) -> Optional[PricePerceptionReport]:
     """Coerce a dict price report when available; otherwise let callers recalculate."""
     if isinstance(value, PricePerceptionReport):
         return value
@@ -1135,7 +1135,7 @@ def _coerce_price_report(value: Any) -> PricePerceptionReport | None:
     return None
 
 
-def _coerce_competitor_gap(value: Any) -> CompetitorGapReport | None:
+def _coerce_competitor_gap(value: Any) -> Optional[CompetitorGapReport]:
     """Coerce a dict competitor report when available; otherwise recalculate."""
     if isinstance(value, CompetitorGapReport):
         return value

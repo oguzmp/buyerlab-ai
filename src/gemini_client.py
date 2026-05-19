@@ -5,7 +5,10 @@ from __future__ import annotations
 import json
 import os
 import re
-from typing import Any
+import urllib.error
+import urllib.parse
+import urllib.request
+from typing import Any, Optional
 
 try:
     from dotenv import load_dotenv
@@ -45,22 +48,21 @@ def generate_text(prompt: str) -> str:
     if _mock_mode_enabled():
         return json.dumps(MOCK_JSON_RESPONSE)
 
-    client = _create_client()
     model = _configured_model()
 
     try:
-        response = client.models.generate_content(model=model, contents=prompt)
+        response_text = _request_gemini_text(prompt, model)
     except Exception as exc:  # pragma: no cover - depends on remote API behavior.
+        if isinstance(exc, GeminiClientError):
+            raise
         raise GeminiClientError(
             f"Gemini request failed safely: {_safe_error_message(exc)}"
         ) from exc
 
-    text = getattr(response, "text", None)
-
-    if not text:
+    if not response_text:
         raise GeminiClientError("Gemini returned an empty response.")
 
-    return text
+    return response_text
 
 
 def generate_json(prompt: str) -> dict[str, Any]:
@@ -109,7 +111,7 @@ def check_gemini_connection() -> dict[str, Any]:
 
 
 def _create_client() -> Any:
-    """Create a Gemini client from the GEMINI_API_KEY environment variable."""
+    """Validate Gemini configuration without importing a provider SDK."""
     _load_env()
     api_key = os.getenv("GEMINI_API_KEY")
 
@@ -119,14 +121,68 @@ def _create_client() -> Any:
             "BUYERLAB_MOCK_MODE=true for demos and tests."
         )
 
+    return {"api_key_configured": True}
+
+
+def _request_gemini_text(prompt: str, model: str) -> str:
+    """Call Gemini through REST so cPanel does not need Google SDK packages."""
+    _load_env()
+    api_key = os.getenv("GEMINI_API_KEY")
+    if not api_key:
+        raise MissingGeminiApiKeyError(
+            "GEMINI_API_KEY is missing. Set it in your environment or enable "
+            "BUYERLAB_MOCK_MODE=true for demos and tests."
+        )
+
+    model_name = model[7:] if model.startswith("models/") else model
+    encoded_model = urllib.parse.quote(model_name, safe="")
+    endpoint = (
+        "https://generativelanguage.googleapis.com/v1beta/models/"
+        f"{encoded_model}:generateContent?key={urllib.parse.quote(api_key, safe='')}"
+    )
+    payload = {
+        "contents": [{"parts": [{"text": prompt}]}],
+        "generationConfig": {
+            "temperature": 0.2,
+            "responseMimeType": "application/json",
+        },
+    }
+    request = urllib.request.Request(
+        endpoint,
+        data=json.dumps(payload).encode("utf-8"),
+        headers={"Content-Type": "application/json"},
+        method="POST",
+    )
+
     try:
-        from google import genai
-    except ImportError as exc:
+        with urllib.request.urlopen(request, timeout=60) as response:
+            raw_body = response.read().decode("utf-8")
+    except urllib.error.HTTPError as exc:  # pragma: no cover - remote API behavior.
+        error_body = exc.read().decode("utf-8", errors="replace")[:300]
         raise GeminiClientError(
-            "google-genai is not installed. Run `pip install -r requirements.txt`."
+            f"Gemini request failed with HTTP {exc.code}: {_safe_error_message(Exception(error_body))}"
+        ) from exc
+    except urllib.error.URLError as exc:  # pragma: no cover - remote API behavior.
+        raise GeminiClientError(
+            f"Gemini request could not reach the API: {_safe_error_message(exc)}"
         ) from exc
 
-    return genai.Client(api_key=api_key)
+    try:
+        parsed = json.loads(raw_body)
+    except json.JSONDecodeError as exc:
+        raise GeminiClientError("Gemini returned a non-JSON API response.") from exc
+
+    candidates = parsed.get("candidates") or []
+    if not candidates:
+        raise GeminiClientError("Gemini returned no candidates.")
+
+    parts = (
+        candidates[0]
+        .get("content", {})
+        .get("parts", [])
+    )
+    texts = [part.get("text", "") for part in parts if isinstance(part, dict)]
+    return "\n".join(text for text in texts if text).strip()
 
 
 def _configured_model() -> str:
@@ -174,7 +230,7 @@ def _json_candidates(response_text: str) -> list[str]:
     return candidates
 
 
-def _try_parse_json_object(text: str) -> dict[str, Any] | None:
+def _try_parse_json_object(text: str) -> Optional[dict[str, Any]]:
     """Parse text as a JSON object, returning None when parsing fails."""
     try:
         parsed = json.loads(text)

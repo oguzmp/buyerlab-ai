@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 from dataclasses import asdict
-from typing import Any
+from typing import Any, Optional
 
 from src.gemini_client import generate_json
 from src.category_intelligence import missing_required_information
@@ -456,7 +456,7 @@ def _first_text(*values: Any) -> str:
     return "No detail provided."
 
 
-def _first_list_item(value: Any) -> str | None:
+def _first_list_item(value: Any) -> Optional[str]:
     """Return the first string item from a list-like response field."""
     if isinstance(value, list) and value:
         first_item = str(value[0]).strip()

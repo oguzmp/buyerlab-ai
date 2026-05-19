@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 from dataclasses import asdict, dataclass, field, replace
-from typing import Any
+from typing import Any, Optional
 
 from src.gemini_client import generate_json
 from src.launch_readiness import build_category_expectation_check
@@ -39,8 +39,8 @@ class OptimizedProductSuggestion:
 def build_optimization_prompt(
     product: ProductInput,
     final_report: SimulationReport,
-    attention_map: AttentionMapReport | None = None,
-    buyer_loss_analysis: list[dict[str, Any]] | None = None,
+    attention_map: Optional[AttentionMapReport] = None,
+    buyer_loss_analysis: Optional[list[dict[str, Any]]] = None,
 ) -> str:
     """Build a Gemini prompt for realistic product page optimization."""
     context = {
@@ -99,8 +99,8 @@ Rules:
 def generate_optimized_product(
     product: ProductInput,
     final_report: SimulationReport,
-    attention_map: AttentionMapReport | None = None,
-    buyer_loss_analysis: list[dict[str, Any]] | None = None,
+    attention_map: Optional[AttentionMapReport] = None,
+    buyer_loss_analysis: Optional[list[dict[str, Any]]] = None,
 ) -> OptimizedProductSuggestion:
     """Generate optimized product copy, falling back safely on invalid Gemini output."""
     try:
@@ -160,7 +160,7 @@ def _suggestion_from_json(
     raw_suggestion: dict[str, Any],
     product: ProductInput,
     final_report: SimulationReport,
-    attention_map: AttentionMapReport | None,
+    attention_map: Optional[AttentionMapReport],
 ) -> OptimizedProductSuggestion:
     """Convert Gemini JSON into a safe OptimizedProductSuggestion."""
     fallback = _fallback_suggestion(product, final_report, attention_map)
@@ -228,7 +228,7 @@ def _suggestion_from_json(
 def _fallback_suggestion(
     product: ProductInput,
     final_report: SimulationReport,
-    attention_map: AttentionMapReport | None,
+    attention_map: Optional[AttentionMapReport],
 ) -> OptimizedProductSuggestion:
     """Create safe optimization suggestions when Gemini is unavailable or invalid."""
     return OptimizedProductSuggestion(
@@ -393,7 +393,7 @@ def _fallback_call_to_action(product: ProductInput) -> str:
 
 def _fallback_change_summary(
     final_report: SimulationReport,
-    attention_map: AttentionMapReport | None,
+    attention_map: Optional[AttentionMapReport],
 ) -> list[str]:
     """Summarize optimization priorities by expected simulated business impact."""
     changes: list[str] = []
